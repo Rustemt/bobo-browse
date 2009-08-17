@@ -120,6 +120,10 @@ public class BrowseRequest implements Serializable{
 		_fetchStoredFields = false;
 	}
 	
+	public void clearSort(){
+		_sortSpecs.clear();
+	}
+	
 	public boolean isFetchStoredFields(){
 		return _fetchStoredFields;
 	}
