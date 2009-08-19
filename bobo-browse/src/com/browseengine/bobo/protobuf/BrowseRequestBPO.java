@@ -26,7 +26,6 @@ public final class BrowseRequestBPO {
       return com.browseengine.bobo.protobuf.BrowseRequestBPO.internal_static_com_browseengine_bobo_protobuf_Property_descriptor;
     }
     
-    @Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return com.browseengine.bobo.protobuf.BrowseRequestBPO.internal_static_com_browseengine_bobo_protobuf_Property_fieldAccessorTable;
@@ -46,13 +45,11 @@ public final class BrowseRequestBPO {
     public boolean hasVal() { return hasVal; }
     public java.lang.String getVal() { return val_; }
     
-    @Override
     public final boolean isInitialized() {
       if (!hasKey) return false;
       return true;
     }
     
-    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (hasKey()) {
@@ -65,7 +62,6 @@ public final class BrowseRequestBPO {
     }
     
     private int memoizedSerializedSize = -1;
-    @Override
     public int getSerializedSize() {
       int size = memoizedSerializedSize;
       if (size != -1) return size;
@@ -91,7 +87,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Property parseFrom(
         com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data, extensionRegistry)
                .buildParsed();
@@ -102,7 +98,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Property parseFrom(
         byte[] data,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data, extensionRegistry)
                .buildParsed();
@@ -113,7 +109,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Property parseFrom(
         java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input, extensionRegistry)
                .buildParsed();
@@ -124,7 +120,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Property parseDelimitedFrom(
         java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return newBuilder().mergeDelimitedFrom(input, extensionRegistry)
                .buildParsed();
@@ -136,43 +132,49 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Property parseFrom(
         com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input, extensionRegistry)
                .buildParsed();
     }
     
-    public static Builder newBuilder() { return new Builder(); }
-    public Builder newBuilderForType() { return new Builder(); }
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder(com.browseengine.bobo.protobuf.BrowseRequestBPO.Property prototype) {
-      return new Builder().mergeFrom(prototype);
+      return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
     
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private com.browseengine.bobo.protobuf.BrowseRequestBPO.Property result;
+      
       // Construct using com.browseengine.bobo.protobuf.BrowseRequestBPO.Property.newBuilder()
       private Builder() {}
       
-      com.browseengine.bobo.protobuf.BrowseRequestBPO.Property result = new com.browseengine.bobo.protobuf.BrowseRequestBPO.Property();
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new com.browseengine.bobo.protobuf.BrowseRequestBPO.Property();
+        return builder;
+      }
       
-      @Override
       protected com.browseengine.bobo.protobuf.BrowseRequestBPO.Property internalGetResult() {
         return result;
       }
       
-      @Override
       public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
         result = new com.browseengine.bobo.protobuf.BrowseRequestBPO.Property();
         return this;
       }
       
-      @Override
       public Builder clone() {
-        return new Builder().mergeFrom(result);
+        return create().mergeFrom(result);
       }
       
-      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return com.browseengine.bobo.protobuf.BrowseRequestBPO.Property.getDescriptor();
@@ -182,10 +184,12 @@ public final class BrowseRequestBPO {
         return com.browseengine.bobo.protobuf.BrowseRequestBPO.Property.getDefaultInstance();
       }
       
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
       public com.browseengine.bobo.protobuf.BrowseRequestBPO.Property build() {
         if (result != null && !isInitialized()) {
-          throw new com.google.protobuf.UninitializedMessageException(
-            result);
+          throw newUninitializedMessageException(result);
         }
         return buildPartial();
       }
@@ -193,7 +197,7 @@ public final class BrowseRequestBPO {
       private com.browseengine.bobo.protobuf.BrowseRequestBPO.Property buildParsed()
           throws com.google.protobuf.InvalidProtocolBufferException {
         if (!isInitialized()) {
-          throw new com.google.protobuf.UninitializedMessageException(
+          throw newUninitializedMessageException(
             result).asInvalidProtocolBufferException();
         }
         return buildPartial();
@@ -202,13 +206,13 @@ public final class BrowseRequestBPO {
       public com.browseengine.bobo.protobuf.BrowseRequestBPO.Property buildPartial() {
         if (result == null) {
           throw new IllegalStateException(
-            "build() has already been called on this Builder.");  }
+            "build() has already been called on this Builder.");
+        }
         com.browseengine.bobo.protobuf.BrowseRequestBPO.Property returnMe = result;
         result = null;
         return returnMe;
       }
       
-      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof com.browseengine.bobo.protobuf.BrowseRequestBPO.Property) {
           return mergeFrom((com.browseengine.bobo.protobuf.BrowseRequestBPO.Property)other);
@@ -230,18 +234,9 @@ public final class BrowseRequestBPO {
         return this;
       }
       
-      @Override
-      public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input)
-          throws java.io.IOException {
-        return mergeFrom(input,
-          com.google.protobuf.ExtensionRegistry.getEmptyRegistry());
-      }
-      
-      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistry extensionRegistry)
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
         com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder(
@@ -290,7 +285,7 @@ public final class BrowseRequestBPO {
       }
       public Builder clearKey() {
         result.hasKey = false;
-        result.key_ = "";
+        result.key_ = getDefaultInstance().getKey();
         return this;
       }
       
@@ -311,13 +306,17 @@ public final class BrowseRequestBPO {
       }
       public Builder clearVal() {
         result.hasVal = false;
-        result.val_ = "";
+        result.val_ = getDefaultInstance().getVal();
         return this;
       }
     }
     
     static {
       com.browseengine.bobo.protobuf.BrowseRequestBPO.getDescriptor();
+    }
+    
+    static {
+      com.browseengine.bobo.protobuf.BrowseRequestBPO.internalForceInit();
     }
   }
   
@@ -340,13 +339,12 @@ public final class BrowseRequestBPO {
       return com.browseengine.bobo.protobuf.BrowseRequestBPO.internal_static_com_browseengine_bobo_protobuf_Selection_descriptor;
     }
     
-    @Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return com.browseengine.bobo.protobuf.BrowseRequestBPO.internal_static_com_browseengine_bobo_protobuf_Selection_fieldAccessorTable;
     }
     
-    public static enum Operation
+    public enum Operation
         implements com.google.protobuf.ProtocolMessageEnum {
       OR(0, 0),
       AND(1, 1),
@@ -362,6 +360,18 @@ public final class BrowseRequestBPO {
           default: return null;
         }
       }
+      
+      public static com.google.protobuf.Internal.EnumLiteMap<Operation>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static com.google.protobuf.Internal.EnumLiteMap<Operation>
+          internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<Operation>() {
+              public Operation findValueByNumber(int number) {
+                return Operation.valueOf(number)
+      ;        }
+            };
       
       public final com.google.protobuf.Descriptors.EnumValueDescriptor
           getValueDescriptor() {
@@ -449,7 +459,6 @@ public final class BrowseRequestBPO {
       return props_.get(index);
     }
     
-    @Override
     public final boolean isInitialized() {
       if (!hasName) return false;
       for (com.browseengine.bobo.protobuf.BrowseRequestBPO.Property element : getPropsList()) {
@@ -458,7 +467,6 @@ public final class BrowseRequestBPO {
       return true;
     }
     
-    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (hasName()) {
@@ -480,7 +488,6 @@ public final class BrowseRequestBPO {
     }
     
     private int memoizedSerializedSize = -1;
-    @Override
     public int getSerializedSize() {
       int size = memoizedSerializedSize;
       if (size != -1) return size;
@@ -528,7 +535,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection parseFrom(
         com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data, extensionRegistry)
                .buildParsed();
@@ -539,7 +546,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection parseFrom(
         byte[] data,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data, extensionRegistry)
                .buildParsed();
@@ -550,7 +557,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection parseFrom(
         java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input, extensionRegistry)
                .buildParsed();
@@ -561,7 +568,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection parseDelimitedFrom(
         java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return newBuilder().mergeDelimitedFrom(input, extensionRegistry)
                .buildParsed();
@@ -573,43 +580,49 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection parseFrom(
         com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input, extensionRegistry)
                .buildParsed();
     }
     
-    public static Builder newBuilder() { return new Builder(); }
-    public Builder newBuilderForType() { return new Builder(); }
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder(com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection prototype) {
-      return new Builder().mergeFrom(prototype);
+      return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
     
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection result;
+      
       // Construct using com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection.newBuilder()
       private Builder() {}
       
-      com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection result = new com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection();
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection();
+        return builder;
+      }
       
-      @Override
       protected com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection internalGetResult() {
         return result;
       }
       
-      @Override
       public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
         result = new com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection();
         return this;
       }
       
-      @Override
       public Builder clone() {
-        return new Builder().mergeFrom(result);
+        return create().mergeFrom(result);
       }
       
-      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection.getDescriptor();
@@ -619,10 +632,12 @@ public final class BrowseRequestBPO {
         return com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection.getDefaultInstance();
       }
       
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
       public com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection build() {
         if (result != null && !isInitialized()) {
-          throw new com.google.protobuf.UninitializedMessageException(
-            result);
+          throw newUninitializedMessageException(result);
         }
         return buildPartial();
       }
@@ -630,7 +645,7 @@ public final class BrowseRequestBPO {
       private com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection buildParsed()
           throws com.google.protobuf.InvalidProtocolBufferException {
         if (!isInitialized()) {
-          throw new com.google.protobuf.UninitializedMessageException(
+          throw newUninitializedMessageException(
             result).asInvalidProtocolBufferException();
         }
         return buildPartial();
@@ -639,7 +654,8 @@ public final class BrowseRequestBPO {
       public com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection buildPartial() {
         if (result == null) {
           throw new IllegalStateException(
-            "build() has already been called on this Builder.");  }
+            "build() has already been called on this Builder.");
+        }
         if (result.values_ != java.util.Collections.EMPTY_LIST) {
           result.values_ =
             java.util.Collections.unmodifiableList(result.values_);
@@ -657,7 +673,6 @@ public final class BrowseRequestBPO {
         return returnMe;
       }
       
-      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection) {
           return mergeFrom((com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection)other);
@@ -697,18 +712,9 @@ public final class BrowseRequestBPO {
         return this;
       }
       
-      @Override
-      public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input)
-          throws java.io.IOException {
-        return mergeFrom(input,
-          com.google.protobuf.ExtensionRegistry.getEmptyRegistry());
-      }
-      
-      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistry extensionRegistry)
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
         com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder(
@@ -777,7 +783,7 @@ public final class BrowseRequestBPO {
       }
       public Builder clearName() {
         result.hasName = false;
-        result.name_ = "";
+        result.name_ = getDefaultInstance().getName();
         return this;
       }
       
@@ -937,6 +943,10 @@ public final class BrowseRequestBPO {
     static {
       com.browseengine.bobo.protobuf.BrowseRequestBPO.getDescriptor();
     }
+    
+    static {
+      com.browseengine.bobo.protobuf.BrowseRequestBPO.internalForceInit();
+    }
   }
   
   public static final class Sort extends
@@ -958,7 +968,6 @@ public final class BrowseRequestBPO {
       return com.browseengine.bobo.protobuf.BrowseRequestBPO.internal_static_com_browseengine_bobo_protobuf_Sort_descriptor;
     }
     
-    @Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return com.browseengine.bobo.protobuf.BrowseRequestBPO.internal_static_com_browseengine_bobo_protobuf_Sort_fieldAccessorTable;
@@ -985,12 +994,10 @@ public final class BrowseRequestBPO {
     public boolean hasType() { return hasType; }
     public int getType() { return type_; }
     
-    @Override
     public final boolean isInitialized() {
       return true;
     }
     
-    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (hasField()) {
@@ -1006,7 +1013,6 @@ public final class BrowseRequestBPO {
     }
     
     private int memoizedSerializedSize = -1;
-    @Override
     public int getSerializedSize() {
       int size = memoizedSerializedSize;
       if (size != -1) return size;
@@ -1036,7 +1042,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort parseFrom(
         com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data, extensionRegistry)
                .buildParsed();
@@ -1047,7 +1053,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort parseFrom(
         byte[] data,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data, extensionRegistry)
                .buildParsed();
@@ -1058,7 +1064,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort parseFrom(
         java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input, extensionRegistry)
                .buildParsed();
@@ -1069,7 +1075,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort parseDelimitedFrom(
         java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return newBuilder().mergeDelimitedFrom(input, extensionRegistry)
                .buildParsed();
@@ -1081,43 +1087,49 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort parseFrom(
         com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input, extensionRegistry)
                .buildParsed();
     }
     
-    public static Builder newBuilder() { return new Builder(); }
-    public Builder newBuilderForType() { return new Builder(); }
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder(com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort prototype) {
-      return new Builder().mergeFrom(prototype);
+      return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
     
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort result;
+      
       // Construct using com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort.newBuilder()
       private Builder() {}
       
-      com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort result = new com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort();
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort();
+        return builder;
+      }
       
-      @Override
       protected com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort internalGetResult() {
         return result;
       }
       
-      @Override
       public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
         result = new com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort();
         return this;
       }
       
-      @Override
       public Builder clone() {
-        return new Builder().mergeFrom(result);
+        return create().mergeFrom(result);
       }
       
-      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort.getDescriptor();
@@ -1127,10 +1139,12 @@ public final class BrowseRequestBPO {
         return com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort.getDefaultInstance();
       }
       
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
       public com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort build() {
         if (result != null && !isInitialized()) {
-          throw new com.google.protobuf.UninitializedMessageException(
-            result);
+          throw newUninitializedMessageException(result);
         }
         return buildPartial();
       }
@@ -1138,7 +1152,7 @@ public final class BrowseRequestBPO {
       private com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort buildParsed()
           throws com.google.protobuf.InvalidProtocolBufferException {
         if (!isInitialized()) {
-          throw new com.google.protobuf.UninitializedMessageException(
+          throw newUninitializedMessageException(
             result).asInvalidProtocolBufferException();
         }
         return buildPartial();
@@ -1147,13 +1161,13 @@ public final class BrowseRequestBPO {
       public com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort buildPartial() {
         if (result == null) {
           throw new IllegalStateException(
-            "build() has already been called on this Builder.");  }
+            "build() has already been called on this Builder.");
+        }
         com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort returnMe = result;
         result = null;
         return returnMe;
       }
       
-      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort) {
           return mergeFrom((com.browseengine.bobo.protobuf.BrowseRequestBPO.Sort)other);
@@ -1178,18 +1192,9 @@ public final class BrowseRequestBPO {
         return this;
       }
       
-      @Override
-      public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input)
-          throws java.io.IOException {
-        return mergeFrom(input,
-          com.google.protobuf.ExtensionRegistry.getEmptyRegistry());
-      }
-      
-      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistry extensionRegistry)
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
         com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder(
@@ -1242,7 +1247,7 @@ public final class BrowseRequestBPO {
       }
       public Builder clearField() {
         result.hasField = false;
-        result.field_ = "";
+        result.field_ = getDefaultInstance().getField();
         return this;
       }
       
@@ -1286,6 +1291,10 @@ public final class BrowseRequestBPO {
     static {
       com.browseengine.bobo.protobuf.BrowseRequestBPO.getDescriptor();
     }
+    
+    static {
+      com.browseengine.bobo.protobuf.BrowseRequestBPO.internalForceInit();
+    }
   }
   
   public static final class FacetSpec extends
@@ -1307,13 +1316,12 @@ public final class BrowseRequestBPO {
       return com.browseengine.bobo.protobuf.BrowseRequestBPO.internal_static_com_browseengine_bobo_protobuf_FacetSpec_descriptor;
     }
     
-    @Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return com.browseengine.bobo.protobuf.BrowseRequestBPO.internal_static_com_browseengine_bobo_protobuf_FacetSpec_fieldAccessorTable;
     }
     
-    public static enum SortSpec
+    public enum SortSpec
         implements com.google.protobuf.ProtocolMessageEnum {
       ValueAsc(0, 0),
       HitsDesc(1, 1),
@@ -1329,6 +1337,18 @@ public final class BrowseRequestBPO {
           default: return null;
         }
       }
+      
+      public static com.google.protobuf.Internal.EnumLiteMap<SortSpec>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static com.google.protobuf.Internal.EnumLiteMap<SortSpec>
+          internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<SortSpec>() {
+              public SortSpec findValueByNumber(int number) {
+                return SortSpec.valueOf(number)
+      ;        }
+            };
       
       public final com.google.protobuf.Descriptors.EnumValueDescriptor
           getValueDescriptor() {
@@ -1401,13 +1421,11 @@ public final class BrowseRequestBPO {
     public boolean hasOrderBy() { return hasOrderBy; }
     public com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec.SortSpec getOrderBy() { return orderBy_; }
     
-    @Override
     public final boolean isInitialized() {
       if (!hasName) return false;
       return true;
     }
     
-    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (hasName()) {
@@ -1429,7 +1447,6 @@ public final class BrowseRequestBPO {
     }
     
     private int memoizedSerializedSize = -1;
-    @Override
     public int getSerializedSize() {
       int size = memoizedSerializedSize;
       if (size != -1) return size;
@@ -1467,7 +1484,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec parseFrom(
         com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data, extensionRegistry)
                .buildParsed();
@@ -1478,7 +1495,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec parseFrom(
         byte[] data,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data, extensionRegistry)
                .buildParsed();
@@ -1489,7 +1506,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec parseFrom(
         java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input, extensionRegistry)
                .buildParsed();
@@ -1500,7 +1517,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec parseDelimitedFrom(
         java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return newBuilder().mergeDelimitedFrom(input, extensionRegistry)
                .buildParsed();
@@ -1512,43 +1529,49 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec parseFrom(
         com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input, extensionRegistry)
                .buildParsed();
     }
     
-    public static Builder newBuilder() { return new Builder(); }
-    public Builder newBuilderForType() { return new Builder(); }
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder(com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec prototype) {
-      return new Builder().mergeFrom(prototype);
+      return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
     
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec result;
+      
       // Construct using com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec.newBuilder()
       private Builder() {}
       
-      com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec result = new com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec();
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec();
+        return builder;
+      }
       
-      @Override
       protected com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec internalGetResult() {
         return result;
       }
       
-      @Override
       public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
         result = new com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec();
         return this;
       }
       
-      @Override
       public Builder clone() {
-        return new Builder().mergeFrom(result);
+        return create().mergeFrom(result);
       }
       
-      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec.getDescriptor();
@@ -1558,10 +1581,12 @@ public final class BrowseRequestBPO {
         return com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec.getDefaultInstance();
       }
       
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
       public com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec build() {
         if (result != null && !isInitialized()) {
-          throw new com.google.protobuf.UninitializedMessageException(
-            result);
+          throw newUninitializedMessageException(result);
         }
         return buildPartial();
       }
@@ -1569,7 +1594,7 @@ public final class BrowseRequestBPO {
       private com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec buildParsed()
           throws com.google.protobuf.InvalidProtocolBufferException {
         if (!isInitialized()) {
-          throw new com.google.protobuf.UninitializedMessageException(
+          throw newUninitializedMessageException(
             result).asInvalidProtocolBufferException();
         }
         return buildPartial();
@@ -1578,13 +1603,13 @@ public final class BrowseRequestBPO {
       public com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec buildPartial() {
         if (result == null) {
           throw new IllegalStateException(
-            "build() has already been called on this Builder.");  }
+            "build() has already been called on this Builder.");
+        }
         com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec returnMe = result;
         result = null;
         return returnMe;
       }
       
-      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec) {
           return mergeFrom((com.browseengine.bobo.protobuf.BrowseRequestBPO.FacetSpec)other);
@@ -1615,18 +1640,9 @@ public final class BrowseRequestBPO {
         return this;
       }
       
-      @Override
-      public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input)
-          throws java.io.IOException {
-        return mergeFrom(input,
-          com.google.protobuf.ExtensionRegistry.getEmptyRegistry());
-      }
-      
-      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistry extensionRegistry)
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
         com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder(
@@ -1693,7 +1709,7 @@ public final class BrowseRequestBPO {
       }
       public Builder clearName() {
         result.hasName = false;
-        result.name_ = "";
+        result.name_ = getDefaultInstance().getName();
         return this;
       }
       
@@ -1776,6 +1792,10 @@ public final class BrowseRequestBPO {
     static {
       com.browseengine.bobo.protobuf.BrowseRequestBPO.getDescriptor();
     }
+    
+    static {
+      com.browseengine.bobo.protobuf.BrowseRequestBPO.internalForceInit();
+    }
   }
   
   public static final class Request extends
@@ -1797,7 +1817,6 @@ public final class BrowseRequestBPO {
       return com.browseengine.bobo.protobuf.BrowseRequestBPO.internal_static_com_browseengine_bobo_protobuf_Request_descriptor;
     }
     
-    @Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return com.browseengine.bobo.protobuf.BrowseRequestBPO.internal_static_com_browseengine_bobo_protobuf_Request_fieldAccessorTable;
@@ -1860,7 +1879,6 @@ public final class BrowseRequestBPO {
     public boolean hasQuery() { return hasQuery; }
     public java.lang.String getQuery() { return query_; }
     
-    @Override
     public final boolean isInitialized() {
       for (com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection element : getSelectionsList()) {
         if (!element.isInitialized()) return false;
@@ -1871,7 +1889,6 @@ public final class BrowseRequestBPO {
       return true;
     }
     
-    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       for (com.browseengine.bobo.protobuf.BrowseRequestBPO.Selection element : getSelectionsList()) {
@@ -1896,7 +1913,6 @@ public final class BrowseRequestBPO {
     }
     
     private int memoizedSerializedSize = -1;
-    @Override
     public int getSerializedSize() {
       int size = memoizedSerializedSize;
       if (size != -1) return size;
@@ -1938,7 +1954,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Request parseFrom(
         com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data, extensionRegistry)
                .buildParsed();
@@ -1949,7 +1965,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Request parseFrom(
         byte[] data,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data, extensionRegistry)
                .buildParsed();
@@ -1960,7 +1976,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Request parseFrom(
         java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input, extensionRegistry)
                .buildParsed();
@@ -1971,7 +1987,7 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Request parseDelimitedFrom(
         java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return newBuilder().mergeDelimitedFrom(input, extensionRegistry)
                .buildParsed();
@@ -1983,43 +1999,49 @@ public final class BrowseRequestBPO {
     }
     public static com.browseengine.bobo.protobuf.BrowseRequestBPO.Request parseFrom(
         com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistry extensionRegistry)
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input, extensionRegistry)
                .buildParsed();
     }
     
-    public static Builder newBuilder() { return new Builder(); }
-    public Builder newBuilderForType() { return new Builder(); }
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder(com.browseengine.bobo.protobuf.BrowseRequestBPO.Request prototype) {
-      return new Builder().mergeFrom(prototype);
+      return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
     
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private com.browseengine.bobo.protobuf.BrowseRequestBPO.Request result;
+      
       // Construct using com.browseengine.bobo.protobuf.BrowseRequestBPO.Request.newBuilder()
       private Builder() {}
       
-      com.browseengine.bobo.protobuf.BrowseRequestBPO.Request result = new com.browseengine.bobo.protobuf.BrowseRequestBPO.Request();
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new com.browseengine.bobo.protobuf.BrowseRequestBPO.Request();
+        return builder;
+      }
       
-      @Override
       protected com.browseengine.bobo.protobuf.BrowseRequestBPO.Request internalGetResult() {
         return result;
       }
       
-      @Override
       public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
         result = new com.browseengine.bobo.protobuf.BrowseRequestBPO.Request();
         return this;
       }
       
-      @Override
       public Builder clone() {
-        return new Builder().mergeFrom(result);
+        return create().mergeFrom(result);
       }
       
-      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return com.browseengine.bobo.protobuf.BrowseRequestBPO.Request.getDescriptor();
@@ -2029,10 +2051,12 @@ public final class BrowseRequestBPO {
         return com.browseengine.bobo.protobuf.BrowseRequestBPO.Request.getDefaultInstance();
       }
       
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
       public com.browseengine.bobo.protobuf.BrowseRequestBPO.Request build() {
         if (result != null && !isInitialized()) {
-          throw new com.google.protobuf.UninitializedMessageException(
-            result);
+          throw newUninitializedMessageException(result);
         }
         return buildPartial();
       }
@@ -2040,7 +2064,7 @@ public final class BrowseRequestBPO {
       private com.browseengine.bobo.protobuf.BrowseRequestBPO.Request buildParsed()
           throws com.google.protobuf.InvalidProtocolBufferException {
         if (!isInitialized()) {
-          throw new com.google.protobuf.UninitializedMessageException(
+          throw newUninitializedMessageException(
             result).asInvalidProtocolBufferException();
         }
         return buildPartial();
@@ -2049,7 +2073,8 @@ public final class BrowseRequestBPO {
       public com.browseengine.bobo.protobuf.BrowseRequestBPO.Request buildPartial() {
         if (result == null) {
           throw new IllegalStateException(
-            "build() has already been called on this Builder.");  }
+            "build() has already been called on this Builder.");
+        }
         if (result.selections_ != java.util.Collections.EMPTY_LIST) {
           result.selections_ =
             java.util.Collections.unmodifiableList(result.selections_);
@@ -2067,7 +2092,6 @@ public final class BrowseRequestBPO {
         return returnMe;
       }
       
-      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof com.browseengine.bobo.protobuf.BrowseRequestBPO.Request) {
           return mergeFrom((com.browseengine.bobo.protobuf.BrowseRequestBPO.Request)other);
@@ -2110,18 +2134,9 @@ public final class BrowseRequestBPO {
         return this;
       }
       
-      @Override
-      public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input)
-          throws java.io.IOException {
-        return mergeFrom(input,
-          com.google.protobuf.ExtensionRegistry.getEmptyRegistry());
-      }
-      
-      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistry extensionRegistry)
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
         com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder(
@@ -2381,13 +2396,17 @@ public final class BrowseRequestBPO {
       }
       public Builder clearQuery() {
         result.hasQuery = false;
-        result.query_ = "";
+        result.query_ = getDefaultInstance().getQuery();
         return this;
       }
     }
     
     static {
       com.browseengine.bobo.protobuf.BrowseRequestBPO.getDescriptor();
+    }
+    
+    static {
+      com.browseengine.bobo.protobuf.BrowseRequestBPO.internalForceInit();
     }
   }
   
@@ -2424,7 +2443,7 @@ public final class BrowseRequestBPO {
   private static com.google.protobuf.Descriptors.FileDescriptor
       descriptor;
   static {
-    java.lang.String descriptorData =
+    java.lang.String[] descriptorData = {
       "\n\017browseReq.proto\022\036com.browseengine.bobo" +
       ".protobuf\"$\n\010Property\022\013\n\003key\030\001 \002(\t\022\013\n\003va" +
       "l\030\002 \001(\t\"\330\001\n\tSelection\022\014\n\004name\030\001 \002(\t\022\016\n\006v" +
@@ -2434,7 +2453,7 @@ public final class BrowseRequestBPO {
       ".browseengine.bobo.protobuf.Property\"\034\n\t" +
       "Operation\022\006\n\002OR\020\000\022\007\n\003AND\020\001\"4\n\004Sort\022\r\n\005fi" +
       "eld\030\001 \001(\t\022\017\n\007reverse\030\002 \001(\010\022\014\n\004type\030\003 \001(\r" +
-      "\"\277\001\n\tFacetSpec\022\014\n\004name\030\001 \002(\t\022\013\n\003max\030\002 \001(" +
+      "\"\277\001\n\tFacetSpec\022\014\n\004name\030\001 \002(\t\022\013\n\003max\030\002 \001(",
       "\r\022\016\n\006expand\030\003 \001(\010\022\020\n\010minCount\030\004 \001(\r\022M\n\007o" +
       "rderBy\030\005 \001(\01622.com.browseengine.bobo.pro" +
       "tobuf.FacetSpec.SortSpec:\010HitsDesc\"&\n\010So" +
@@ -2444,9 +2463,10 @@ public final class BrowseRequestBPO {
       "\002 \001(\r\022\r\n\005count\030\003 \001(\r\0222\n\004sort\030\004 \003(\0132$.com" +
       ".browseengine.bobo.protobuf.Sort\022=\n\nface" +
       "tSpecs\030\005 \003(\0132).com.browseengine.bobo.pro" +
-      "tobuf.FacetSpec\022\r\n\005query\030\006 \001(\tB4\n\036com.br" +
+      "tobuf.FacetSpec\022\r\n\005query\030\006 \001(\tB4\n\036com.br",
       "owseengine.bobo.protobufB\020BrowseRequestB" +
-      "POH\001";
+      "POH\001"
+    };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
@@ -2500,4 +2520,6 @@ public final class BrowseRequestBPO {
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         }, assigner);
   }
+  
+  public static void internalForceInit() {}
 }
