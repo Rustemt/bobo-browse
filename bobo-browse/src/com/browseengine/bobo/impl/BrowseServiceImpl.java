@@ -48,7 +48,7 @@ public class BrowseServiceImpl implements BrowseService {
 	private BoboIndexReader _reader;
 		
 	
-	public BrowseServiceImpl(File idxDir,long refreshtime) {
+	public BrowseServiceImpl(File idxDir) {
 		super();
 		_idxDir=idxDir;
 		try

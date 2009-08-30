@@ -42,10 +42,10 @@ public class BrowseServiceFactory {
 	
 	private static Logger logger=Logger.getLogger(BrowseServiceFactory.class);
 	
-	public static BrowseService createBrowseService(File idxDir,long refreshtime)
+	public static BrowseService createBrowseService(File idxDir)
 													throws BrowseException {
 		if (idxDir==null) throw new IllegalArgumentException("Null index dir specified");
-			return new BrowseServiceImpl(idxDir,refreshtime);
+			return new BrowseServiceImpl(idxDir);
 	}
 	
 	public static BrowseService createBrowseService(BoboIndexReader bReader){

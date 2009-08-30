@@ -158,7 +158,7 @@ public class BrowseServlet
 			throw new ServletException("No index directory configured");
 	
 		try {
-			return BrowseServiceFactory.createBrowseService(new File(indexDir),0L);
+			return BrowseServiceFactory.createBrowseService(new File(indexDir));
 		} catch (BrowseException e) {
 			throw new ServletException(e.getMessage(),e.getCause());
 		}

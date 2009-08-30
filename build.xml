@@ -190,6 +190,7 @@
 		</java>
 	</target>
 	
+	
 	<path id="test.compile.class.path">
 			<fileset dir="${lib.master}">
 				<include name="*.jar" />
@@ -202,6 +203,14 @@
 			</fileset>
 		    <pathelement path="${resource}"/>
 	</path>
+	
+
+	<target name="cmdline" depends="jars">
+		<java classname="com.browseengine.bobo.client.BoboCmdlineApp">
+			<classpath refid="test.compile.class.path"/>
+			<arg value="cardata/cartag" />
+		</java>
+	</target>
 				
 	<target name="test-build" depends="jars">
 		<javac destdir="${build.test}">
