@@ -7,11 +7,28 @@
 <web-app>
 	<display-name>Bobo Browse - App</display-name>
 	<description></description>
-
+    
+    <context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>
+			classpath:application.spring
+		</param-value>
+	</context-param>
+	
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	<servlet>
+        <servlet-name>BoboAppServlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <!-- 
 	<servlet>
 		<servlet-name>BrowseServlet</servlet-name>
 		<servlet-class>com.browseengine.bobo.servlet.BrowseServlet</servlet-class>		
 	</servlet>
+	 -->
 	<servlet>
   		<servlet-name>dwr-invoker</servlet-name>
   		<display-name>DWR Servlet</display-name>
@@ -22,9 +39,15 @@
   		</init-param>
 	</servlet>	
 	<servlet-mapping>
+        <servlet-name>BoboAppServlet</servlet-name>
+        <url-pattern>/bobo/*</url-pattern>
+    </servlet-mapping>
+    <!-- 
+	<servlet-mapping>
 		<servlet-name>BrowseServlet</servlet-name>
 		<url-pattern>/bobo/*</url-pattern>
 	</servlet-mapping>
+	 -->
 	<servlet-mapping>
   		<servlet-name>dwr-invoker</servlet-name>
   		<url-pattern>/dwr/*</url-pattern>

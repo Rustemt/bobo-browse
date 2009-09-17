@@ -9,18 +9,18 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 
-import proj.zoie.api.indexing.Indexable;
-import proj.zoie.api.indexing.IndexableInterpreter;
+import proj.zoie.api.indexing.ZoieIndexable;
+import proj.zoie.api.indexing.ZoieIndexableInterpreter;
 
-public class PropertiesIndexDataInterpreter implements IndexableInterpreter<PropertiesData>
+public class PropertiesIndexDataInterpreter implements ZoieIndexableInterpreter<PropertiesData>
 {
 
-  public Indexable interpret(PropertiesData props)
+  public ZoieIndexable interpret(PropertiesData props)
   {
     return new PropertiesIndexable(props);
   }
   
-  private static class PropertiesIndexable implements Indexable
+  private static class PropertiesIndexable implements ZoieIndexable
   {
     private final PropertiesData _prop;
     private static final String CONTENTS_FIELD_NAME = "contents";
@@ -29,7 +29,7 @@ public class PropertiesIndexDataInterpreter implements IndexableInterpreter<Prop
       _prop = prop;
     }
     
-    public Document[] buildDocuments()
+    public Document buildDocument()
     {
       HashMap<String,String> data = _prop.getData();
       if (data!=null)
@@ -52,7 +52,7 @@ public class PropertiesIndexDataInterpreter implements IndexableInterpreter<Prop
           }
           doc.add(new Field(CONTENTS_FIELD_NAME,contentBuffer.toString(),Store.NO,Index.ANALYZED));
         }
-        return new Document[]{doc};
+        return doc;
       }
       else
       {
@@ -75,7 +75,21 @@ public class PropertiesIndexDataInterpreter implements IndexableInterpreter<Prop
     {
       return _prop.isSkip();
     }
+
+	public IndexingReq[] buildIndexingReqs() {
+		Document doc = buildDocument();
+		IndexingReq req = new IndexingReq(doc);
+		return new IndexingReq[]{req};
+	}
+
+	public Document[] buildDocuments() {
+		return new Document[]{buildDocument()};
+	}
     
+  }
+
+  public ZoieIndexable convertAndInterpret(PropertiesData props) {
+	return new PropertiesIndexable(props);
   }
 
 }

@@ -263,12 +263,6 @@ public class PathFacetHandler extends FacetHandler implements FacetHandlerFactor
 		_dataCache.load(_name, reader, _termListFactory);
 	}
 	
-	@Override
-	public FacetAccessible merge(FacetSpec fspec,
-			List<FacetAccessible> facetList) {
-		throw new IllegalStateException("Cannot support merging for path facetHandlers");
-	}
-	
 	private final static class PathFacetCountCollector implements FacetCountCollector
 	{
 		private final BrowseSelection _sel;

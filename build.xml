@@ -20,6 +20,9 @@
 	<property name="bobo-tools" value="bobo-tools"/>
 	
 	<property name="resource" location="resource" />
+	<property name="spring-conf" location="spring-conf" />
+	<property name="settings" location="settings" />
+		
 
 	<property name="test" value="test"/>
 	<property name="build.test" value="build-test"/>
@@ -125,22 +128,29 @@
 				 </classpath>
 		</typedef>
 		
-		<makeui name="${ui.name}" output="${ui.out}" indexDir="${ui.idx.dir}"/>
+		<makeui name="${ui.name}" url="/bobo/browse.form" output="${ui.out}" indexDir="${ui.idx.dir}"/>
 		
+
+	    <copy file="${settings}/paths.properties" todir="${resource}" />
+	    <replace file="${resource}/paths.properties" token="@bobo.root@" value="${bobo.root}" />
+	    <replace file="${resource}/paths.properties" token="@maxdoc@" value="1000000" />
+	    	
 		<war destfile="${ui.out}/${ui.name}.war" webxml="${resource}/web.xml">
 			  <fileset dir="${ui.out}/${ui.name}/"/>
 			  <lib dir="${dist}">
 			    <include name="bobo-browse-${version}.jar"/>
-			  	<include name="bobo-server-${version}.jar"/>
+			  	<include name="bobo-zoie-${version}.jar"/>
 			  </lib>
 			  <lib dir="${lib.master}" excludes="servlet-api.jar">
 			    <include name="*.jar"/>
 			  </lib>
 			  <classes dir="${resource}" excludes="web.xml" />
+			  <classes dir="${spring-conf}"/>
 			  <webinf dir="dwr" />
 			<fileset dir="cardemo/webapp/" />
 		</war>
 		
+		<delete file="${resource}/paths.properties"/>
 		<!-- <delete dir="${ui.out}/${ui.name}"/>-->
 	</target>
 	
@@ -233,7 +243,7 @@
         	<formatter type="xml"/>
 	        <batchtest fork="yes" todir="${test.report.dir}">
 	          <fileset dir="${test}/src">
-	             <include name="**/BoboTestCase.java" />
+	             <include name="**/UnitTestSuite.java" />
 	          </fileset>
 	        </batchtest>
 		</junit>

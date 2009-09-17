@@ -17,6 +17,8 @@ import com.browseengine.bobo.api.BrowseRequest;
 import com.browseengine.bobo.api.FacetAccessible;
 import com.browseengine.bobo.api.FacetSpec;
 import com.browseengine.bobo.api.MappedFacetAccessible;
+import com.browseengine.bobo.api.FacetSpec.FacetSortSpec;
+import com.browseengine.bobo.facets.impl.FacetHitcountComparatorFactory;
 
 /**
  * @author ymatsuda
@@ -157,6 +159,15 @@ public class ListMerger
     return mergedList;
   }
   
+  public static Comparator<BrowseFacet> FACET_VAL_COMPARATOR = new Comparator<BrowseFacet>(){
+
+	public int compare(BrowseFacet o1, BrowseFacet o2) {
+		return o1.getValue().compareTo(o2.getValue());
+	}
+	  
+  };
+  
+  
   public static Map<String,FacetAccessible> mergeSimpleFacetContainers(Collection<Map<String,FacetAccessible>> subMaps,BrowseRequest req)
   {
     Map<String, Map<String, Integer>> counts = new HashMap<String, Map<String, Integer>>();
@@ -183,27 +194,23 @@ public class ListMerger
     for(String facet : counts.keySet())
     {
       Map<String, Integer> facetValueCounts = counts.get(facet);
+      FacetSpec fs = req.getFacetSpec(facet);
+      
+      FacetSpec.FacetSortSpec sortSpec = fs.getOrderBy();
+      
+      Comparator<BrowseFacet> comparator;
+      if (FacetSortSpec.OrderValueAsc.equals(sortSpec)) 
+    	  comparator = FACET_VAL_COMPARATOR;
+      else if (FacetSortSpec.OrderHitsDesc.equals(sortSpec))
+    	  comparator = FacetHitcountComparatorFactory.FACET_HITS_COMPARATOR;
+      else comparator = fs.getCustomComparatorFactory().newComparator();
+      
       List<BrowseFacet> facets = new ArrayList<BrowseFacet>(facetValueCounts.size());
       for(Entry<String, Integer> entry : facetValueCounts.entrySet())
       {
         facets.add(new BrowseFacet(entry.getKey(), entry.getValue()));
       }
-      Collections.sort(facets, new Comparator<BrowseFacet>()
-      {
-        public int compare(BrowseFacet f1, BrowseFacet f2)
-        {
-          int h1 = f1.getHitCount();
-          int h2 = f2.getHitCount();
-
-          int val = h2 - h1;
-
-          if (val == 0)
-          {
-            val = f1.getValue().compareTo(f2.getValue());
-          }
-          return val;
-        }
-      });
+      Collections.sort(facets, comparator);
       if (req != null)
       {
         FacetSpec fspec = req.getFacetSpec(facet);

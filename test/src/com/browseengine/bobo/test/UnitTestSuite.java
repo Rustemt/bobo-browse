@@ -37,6 +37,7 @@ public class UnitTestSuite {
           suite.addTestSuite(BoboTestCase.class);
           suite.addTestSuite(BoboSearcher2Test.class);
           suite.addTestSuite(ProtoBufConvertTest.class);
+          suite.addTestSuite(FacetHandlerTest.class);
           return suite;
   }
   

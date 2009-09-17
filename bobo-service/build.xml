@@ -35,16 +35,19 @@
                 </javac>
         </target>
 	
-        <target name="dist" depends="compile">
+	 	<target name="jar" depends="compile">
+	 		<jar basedir="${build}" destfile="${dist}/bobo-zoie-${version}.jar" />
+	    </target>
+	 		
+        <target name="dist" depends="jar">
         	<war destfile="${dist}/bobo-service-${version}.war" webxml="${web}/web.xml">
-        		<classes dir="${build}"/>
         		<classes dir="${conf}"/>
         		<classes dir="${settings}"/>
 				<webinf dir="${web}" />
 	            <lib dir="${lib.master}"/>
-	            <lib dir="${lib.master}"/>
 				<lib dir="${dist}">
 	            	<include name="bobo-browse*.jar"/>
+	            	<include name="bobo-zoie*.jar"/>
 				</lib>
         	</war>
         </target>

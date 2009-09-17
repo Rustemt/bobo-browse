@@ -28,12 +28,19 @@ public class MakeUITask extends Task {
 	private String name;
 	private String indexDir;
 	private String fieldConf;
+	private String url;
 	
 	public MakeUITask(){
 		super();
 		output=null;
 		name=null;
+		url = null;
 	}
+	
+	public void setURL(String url){
+		this.url = url;
+	}
+	
 	public void setOutput(String output){
 		this.output=output;
 	}
@@ -196,7 +203,7 @@ public class MakeUITask extends Task {
 			PrintWriter out=new PrintWriter(bwriter);
 			
 			// globals
-			out.write("var url=\"/"+name+"/bobo?\";\n");
+			out.write("var url=\"/"+name+url+"?\";\n");
 			out.write("var api=new BoboAPI(url);\n");
 			out.write("var sortnames=new Array(");
 			

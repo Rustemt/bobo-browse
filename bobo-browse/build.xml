@@ -4,6 +4,8 @@
         <property name="lib.master" value="${bobo.root}/lib/master"/>
 	    <property name="dist" value="${bobo.root}/dist"/>
         <property name="build" value="build"/>
+
+		<property name="doc" value="${bobo.root}/doc"/>
 	
 	    <property file="${bobo.root}/version.properties" />
 	
@@ -45,7 +47,7 @@
 					   public="true"
 					   classpathref="project.class.path"
 			           windowtitle="Bobo Browse API">
-			    <link href="http://lucene.apache.org/java/docs/api/"/>						
+			    <link href="http://lucene.apache.org/java/2_4_1/api/"/>						
 			    <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
 			  </javadoc>
 		</target>

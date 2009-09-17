@@ -18,10 +18,10 @@ import com.browseengine.bobo.api.BrowseRequest;
 import com.browseengine.bobo.api.BrowseResult;
 import com.browseengine.bobo.api.FacetAccessible;
 import com.browseengine.bobo.api.MultiBoboBrowser;
-import com.browseengine.bobo.service.BoboBrowseService;
+import com.browseengine.bobo.service.BrowseService;
 import com.browseengine.bobo.service.SerializedFacetAccessible;
 
-public class BoboBrowseServiceImpl implements BoboBrowseService {
+public class BoboBrowseServiceImpl implements BrowseService {
     private final IndexReaderFactory<BoboIndexReader> _indexReaderFactory;
     
 	public BoboBrowseServiceImpl(IndexReaderFactory<BoboIndexReader> indexReaderFactory)
@@ -71,5 +71,9 @@ public class BoboBrowseServiceImpl implements BoboBrowseService {
 		{
 			throw new BrowseException(ioe.getMessage(),ioe);
 		}
+	}
+
+	public void close() throws BrowseException {
+		
 	}
 }

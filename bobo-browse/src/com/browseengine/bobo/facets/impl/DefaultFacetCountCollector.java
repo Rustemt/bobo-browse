@@ -7,7 +7,9 @@ import java.util.List;
 
 import com.browseengine.bobo.api.BrowseFacet;
 import com.browseengine.bobo.api.BrowseSelection;
+import com.browseengine.bobo.api.ComparatorFactory;
 import com.browseengine.bobo.api.FacetSpec;
+import com.browseengine.bobo.api.FieldValueAccessor;
 import com.browseengine.bobo.api.FacetSpec.FacetSortSpec;
 import com.browseengine.bobo.facets.FacetCountCollector;
 import com.browseengine.bobo.facets.data.FacetDataCache;
@@ -69,7 +71,8 @@ public abstract class DefaultFacetCountCollector implements FacetCountCollector
 
           List<BrowseFacet> facetColl;
           List<String> valList=_dataCache.valArray;
-          if (_ospec.getOrderBy() == FacetSortSpec.OrderValueAsc)
+          FacetSortSpec sortspec = _ospec.getOrderBy();
+          if (sortspec == FacetSortSpec.OrderValueAsc)
           {
               facetColl=new ArrayList<BrowseFacet>(max);
               for (int i = 1; i < _count.length;++i) // exclude zero
@@ -83,24 +86,35 @@ public abstract class DefaultFacetCountCollector implements FacetCountCollector
                 if (facetColl.size()>=max) break;
               }
           }
-          else
+          else //if (sortspec == FacetSortSpec.OrderHitsDesc)
           {
-              facetColl=new LinkedList<BrowseFacet>();    
-              BoundedPriorityQueue<Integer> pq=new BoundedPriorityQueue<Integer>(new Comparator<Integer>(){
+        	  ComparatorFactory comparatorFactory;
+        	  if (sortspec == FacetSortSpec.OrderHitsDesc){
+        		  comparatorFactory = new FacetHitcountComparatorFactory();
+        	  }
+        	  else{
+        		  comparatorFactory = _ospec.getCustomComparatorFactory();
+        	  }
+        	  
+        	  if (comparatorFactory == null){
+        		  throw new IllegalArgumentException("facet comparator factory not specified");
+        	  }
+        	  
+        	  Comparator<Integer> comparator = comparatorFactory.newComparator(new FieldValueAccessor(){
 
-                  public int compare(Integer f1, Integer f2) {
-                      int val=_count[f1] - _count[f2];
-                      if (val==0)
-                      {
-                          val=-(f1-f2);
-                      }
-                      return val;
-                  }
-                  
-              },max);
+				public String getFormatedValue(int index) {
+					return _dataCache.valArray.get(index);
+				}
+
+				public Object getRawValue(int index) {
+					return _dataCache.valArray.getInnerList().get(index);
+				}
+        		  
+        	  }, _count);
+              facetColl=new LinkedList<BrowseFacet>();    
+              BoundedPriorityQueue<Integer> pq=new BoundedPriorityQueue<Integer>(comparator,max);
               
-              int size = valList.size();
-              for (int i=1;i<size;++i) // exclude zero
+              for (int i=1;i<_count.length;++i) // exclude zero
               {
                 int hits=_count[i];
                 if (hits>=minCount)

@@ -239,6 +239,14 @@ public class BrowseRequest implements Serializable{
 	  return _selections.get(fieldname);
 	}
 	
+	public Map<String,BrowseSelection> getAllSelections(){
+		return _selections;
+	}
+	
+	public void putAllSelections(Map<String,BrowseSelection> map){
+		_selections.putAll(map);
+	}
+	
 	/**
 	 * Add a sort spec
 	 * @param sortSpec sort spec
@@ -279,7 +287,8 @@ public class BrowseRequest implements Serializable{
       buf.append("page: [").append(_offset).append(',').append(_count).append("]\n");
       buf.append("sort spec: ").append(_sortSpecs).append('\n');
       buf.append("selections: ").append(_selections).append('\n');
-      buf.append("facet spec: ").append(_facetSpecMap);
+      buf.append("facet spec: ").append(_facetSpecMap).append('\n');
+      buf.append("fetch stored fields: ").append(_fetchStoredFields);
       return buf.toString();
 	}
 }
