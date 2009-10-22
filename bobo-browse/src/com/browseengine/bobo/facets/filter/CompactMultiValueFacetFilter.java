@@ -72,29 +72,15 @@ public class CompactMultiValueFacetFilter extends RandomAccessFilter {
 
 		@Override
         public final boolean next() throws IOException {
-		    while(_doc < _maxID) // not yet reached end
-            {
-                if ((_orderArray.get(++_doc) & _bits) != 0x0){
-                    return true;
-                }
-            }
-            return false;
+          _doc = _orderArray.findBits(_bits, _doc + 1, _maxID);
+          return (_doc <= _maxID);
         }
 
         @Override
         public final boolean skipTo(int id) throws IOException {
-          if (_doc < id)
-          {
-            _doc=id-1;
-          }
-          
-          while(_doc < _maxID) // not yet reached end
-          {
-            if ((_orderArray.get(++_doc) & _bits) != 0x0){
-              return true;
-            }
-          }
-          return false;
+          if(id < _doc) id = _doc + 1;
+          _doc = _orderArray.findBits(_bits, id, _maxID);
+          return (_doc <= _maxID);
         }
 	}
 	

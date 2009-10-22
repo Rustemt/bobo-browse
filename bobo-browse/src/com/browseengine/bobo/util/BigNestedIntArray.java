@@ -3,9 +3,6 @@
  */
 package com.browseengine.bobo.util;
 
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
-import it.unimi.dsi.fastutil.floats.FloatList;
-
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -48,9 +45,9 @@ public final class BigNestedIntArray
     private int[][] _reuse;
     private int[] _reuseIdx;
     public int reuseUsage;
-    private static Comparator<Object> COMPARE_ARRAYSIZE = new Comparator<Object>()
+    private static Comparator<int[]> COMPARE_ARRAYSIZE = new Comparator<int[]>()
     {
-      public int compare(Object o1, Object o2)
+      public int compare(int[] o1, int[] o2)
       {
         if(o1 == null || o2 == null)
         {
@@ -58,7 +55,7 @@ public final class BigNestedIntArray
           if(o2 != null) return 1;
           return 0;
         }
-        return (((int[])o1).length - ((int[])o2).length);
+        return (o1.length - o2.length);
       }
     };
     
@@ -76,7 +73,7 @@ public final class BigNestedIntArray
           if(list[i] != null)
           {
             _reuse = list;
-            _reuseIdx = (int[])list[i]; // use the largest page for tracking
+            _reuseIdx = list[i]; // use the largest page for tracking
             break;
           }
         }
@@ -87,7 +84,7 @@ public final class BigNestedIntArray
         {
           if(list[i] == null) break;
           
-          int idx = ((int[])list[i]).length - 1;
+          int idx = (list[i]).length - 1;
           if(idx >= 0 && _reuseIdx[idx] == -1) _reuseIdx[idx] = i;
         }
       }
@@ -103,7 +100,7 @@ public final class BigNestedIntArray
         int location = _reuseIdx[size - 1];
         if(location >= 0 && location < _reuse.length)
         {
-          int[] page = (int[])_reuse[location];
+          int[] page = _reuse[location];
           if(page != null && page.length == size)
           {
             // found a reusable page
@@ -117,7 +114,7 @@ public final class BigNestedIntArray
               {
                 if(_reuse[i] != null)
                 {
-                  _reuseIdx = (int[])_reuse[i];
+                  _reuseIdx = _reuse[i];
                   System.arraycopy(page, 0, _reuseIdx, 0, _reuseIdx.length);
                 }
               }
@@ -367,7 +364,7 @@ public final class BigNestedIntArray
    */
   public final int getData(int id, int[] buf)
   {
-    final int[] page = (int[])_list[id >> PAGEID_SHIFT];
+    final int[] page = _list[id >> PAGEID_SHIFT];
     if(page == null) return 0;
     
     int val = page[id & SLOTID_MASK];
@@ -397,10 +394,9 @@ public final class BigNestedIntArray
    * @param valarray
    * @return
    */
-  @SuppressWarnings("unchecked")
   public final String[] getTranslatedData(int id, List<String> valarray)
   {
-    final int[] page = (int[])_list[id >> PAGEID_SHIFT];
+    final int[] page = _list[id >> PAGEID_SHIFT];
     
     if(page == null)
     {
@@ -437,7 +433,7 @@ public final class BigNestedIntArray
   
   public final float getScores(int id,int[] freqs,float[] boosts,FacetTermScoringFunction function){
 	  function.clearScores();
-	  final int[] page = (int[])_list[id >> PAGEID_SHIFT];
+	  final int[] page = _list[id >> PAGEID_SHIFT];
 	  int val = page[id & SLOTID_MASK];
 	    
       if(val >= 0)
@@ -459,8 +455,8 @@ public final class BigNestedIntArray
   }
   
   public final int compare(int i,int j){
-	  final int[] page1 = (int[])_list[i >> PAGEID_SHIFT];
-	  final int[] page2 = (int[])_list[j >> PAGEID_SHIFT];
+	  final int[] page1 = _list[i >> PAGEID_SHIFT];
+	  final int[] page2 = _list[j >> PAGEID_SHIFT];
 	  
 	  if (page1 == null){
 		  if (page2 == null) return 0;
@@ -530,7 +526,7 @@ public final class BigNestedIntArray
 
   public final boolean contains(int id, int value)
   {
-    final int[] page = (int[])_list[id >> PAGEID_SHIFT];
+    final int[] page = _list[id >> PAGEID_SHIFT];
     if(page == null) return false;
     
     final int val = page[id & SLOTID_MASK];
@@ -538,25 +534,21 @@ public final class BigNestedIntArray
     {
       return (val == value);
     }
-    else if(val == MISSING)
-    {
-      return false;
-    }
-    else
+    else if(val != MISSING)
     {
       int idx = - (val >> VALIDX_SHIFT);// signed shift, remember this is a negative number
-      int end = idx + (val & COUNT_MASK);       // unroll the loop
+      int end = idx + (val & COUNT_MASK);
       while(idx < end)          
       {
         if(page[idx++] == value) return true;  
       }
-      return false;
     }
+    return false;
   }
   
   public final boolean contains(int id, OpenBitSet values)
   {
-    final int[] page = (int[])_list[id >> PAGEID_SHIFT];
+    final int[] page = _list[id >> PAGEID_SHIFT];
     if(page == null) return false;
     
     final int val = page[id & SLOTID_MASK];
@@ -564,20 +556,16 @@ public final class BigNestedIntArray
     {
       return (values.fastGet(val));
     }
-    else if(val == MISSING)
-    {
-      return false;
-    }
-    else
+    else if(val != MISSING)
     {
       int idx = - (val >> VALIDX_SHIFT);// signed shift, remember this is a negative number
-      int end = idx + (val & COUNT_MASK);       // unroll the loop
+      int end = idx + (val & COUNT_MASK);
       while(idx < end)          
       {
         if(values.fastGet(page[idx++])) return true;  
       }
-      return false;
     }
+    return false;
   }
   
   public final int count(final int id, final int[] count)
@@ -598,7 +586,7 @@ public final class BigNestedIntArray
     {
       int idx = - (val >> VALIDX_SHIFT); // signed shift, remember val is a negative number
       int cnt = (val & COUNT_MASK);
-      int end = idx + cnt;       // loop unrolling
+      int end = idx + cnt;
       while(idx < end)
       {
         count[page[idx++]]++;
@@ -616,7 +604,7 @@ public final class BigNestedIntArray
    */
   public final int getNumItems(int id)
   {
-    final int[] page = (int[])_list[id >> PAGEID_SHIFT];
+    final int[] page = _list[id >> PAGEID_SHIFT];
     if(page == null) return 0;
     
     int val = page[id & SLOTID_MASK];
@@ -633,7 +621,7 @@ public final class BigNestedIntArray
    */
   public final boolean addData(final int id, final int data)
   {
-    final int[] page = (int[])_list[id >> PAGEID_SHIFT];
+    final int[] page = _list[id >> PAGEID_SHIFT];
     if(page == null) return true;
     
     final int slotId = (id & SLOTID_MASK);

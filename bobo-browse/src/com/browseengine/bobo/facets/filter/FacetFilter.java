@@ -56,29 +56,15 @@ public class FacetFilter extends RandomAccessFilter
 */
 		@Override
 		public boolean next() throws IOException {
-		    while(_doc < _maxID) // not yet reached end
-			{
-				if (_orderArray.get(++_doc) == _index){
-					return true;
-				}
-			}
-			return false;
+          _doc = _orderArray.findValue(_index, _doc + 1, _maxID);
+          return (_doc <= _maxID);
 		}
 
 		@Override
 		public boolean skipTo(int id) throws IOException {
-          if (_doc < id)
-          {
-            _doc = id - 1;
-          }
-		  
-		  while(_doc < _maxID) // not yet reached end
-		  {
-		    if (_orderArray.get(++_doc) == _index){
-		      return true;
-		    }
-		  }
-		  return false;
+          if(id < _doc) id = _doc + 1;
+          _doc = _orderArray.findValue(_index, id, _maxID);
+          return (_doc <= _maxID);
 		}
 
 	}

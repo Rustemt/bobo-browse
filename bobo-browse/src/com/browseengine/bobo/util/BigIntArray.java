@@ -3,6 +3,8 @@ package com.browseengine.bobo.util;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import org.apache.lucene.util.OpenBitSet;
+
 /**
  * 
  * @author femekci
@@ -47,6 +49,44 @@ public final class BigIntArray implements Serializable
     return _array[docId >> SHIFT_SIZE][docId & MASK];
   }
   
+  public final int findValue(int val, int docId, int maxId)
+  {
+    while(docId <= maxId && _array[docId >> SHIFT_SIZE][docId & MASK] != val)
+    {
+      docId++;
+    }
+    return docId;
+  }
+  
+  public final int findValues(OpenBitSet bitset, int docId, int maxId)
+  {
+    while(docId <= maxId && !bitset.fastGet(_array[docId >> SHIFT_SIZE][docId & MASK]))
+    {
+      docId++;
+    }
+    return docId;
+  }
+  
+  public final int findValueRange(int minVal, int maxVal, int docId, int maxId)
+  {
+    while(docId <= maxId)
+    {
+      int val = _array[docId >> SHIFT_SIZE][docId & MASK];
+      if(val >= minVal && val <= maxVal) break;
+      docId++;
+    }
+    return docId;
+  }
+  
+  public final int findBits(int bits, int docId, int maxId)
+  {
+    while(docId <= maxId && (_array[docId >> SHIFT_SIZE][docId & MASK] & bits) == 0)
+    {
+      docId++;
+    }
+    return docId;
+  }
+
   public int capacity()
   {
     return _numrows * BLOCK_SIZE;
