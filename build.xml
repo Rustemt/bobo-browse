@@ -218,7 +218,7 @@
 	<target name="cmdline" depends="jars">
 		<java classname="com.browseengine.bobo.client.BoboCmdlineApp">
 			<classpath refid="test.compile.class.path"/>
-			<arg value="cardata/cartag" />
+			<arg value="/Users/jwang/opensource/chopchop/data/index/beef" />
 		</java>
 	</target>
 				

@@ -10,7 +10,7 @@ import org.apache.lucene.util.OpenBitSet;
 import com.browseengine.bobo.docidset.EmptyDocIdSet;
 import com.browseengine.bobo.docidset.RandomAccessDocIdSet;
 import com.browseengine.bobo.facets.data.FacetDataCache;
-import com.browseengine.bobo.util.BigIntArray;
+import com.browseengine.bobo.util.BigSegmentedArray;
 
 public class FacetOrFilter extends RandomAccessFilter
 {
@@ -20,7 +20,7 @@ public class FacetOrFilter extends RandomAccessFilter
   private static final long serialVersionUID = 1L;
   
   protected final FacetDataCache _dataCache;
-  protected final BigIntArray _orderArray;
+  protected final BigSegmentedArray _orderArray;
   protected final int[] _index;
   private OpenBitSet _bitset;
   
@@ -92,7 +92,7 @@ public class FacetOrFilter extends RandomAccessFilter
       protected final int[] _index;
       protected int _maxID;
       protected final OpenBitSet _bitset;
-      protected final BigIntArray _orderArray;
+      protected final BigSegmentedArray _orderArray;
       
       public FacetOrDocIdSetIterator(FacetDataCache dataCache,int[] index,OpenBitSet bitset)
       {

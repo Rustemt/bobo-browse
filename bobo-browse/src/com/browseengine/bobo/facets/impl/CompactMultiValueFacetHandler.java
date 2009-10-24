@@ -39,6 +39,7 @@ import com.browseengine.bobo.query.scoring.BoboDocScorer;
 import com.browseengine.bobo.query.scoring.FacetScoreable;
 import com.browseengine.bobo.query.scoring.FacetTermScoringFunctionFactory;
 import com.browseengine.bobo.util.BigIntArray;
+import com.browseengine.bobo.util.BigSegmentedArray;
 import com.browseengine.bobo.util.StringArrayComparator;
 
 public class CompactMultiValueFacetHandler extends FacetHandler implements FacetHandlerFactory,FacetScoreable
@@ -240,7 +241,7 @@ public class CompactMultiValueFacetHandler extends FacetHandler implements Facet
 		
 		mterms.seal();
 
-		_dataCache=new FacetDataCache(order,mterms,freqList.toIntArray(),minIDList.toIntArray(),maxIDList.toIntArray());
+		_dataCache=new FacetDataCache(order,mterms,freqList.toIntArray(),minIDList.toIntArray(),maxIDList.toIntArray(),TermCountSize.large);
 	}
 	
 	private class CompactMultiFacetScoreDocComparator implements ScoreDocComparator{
@@ -324,7 +325,7 @@ public class CompactMultiValueFacetHandler extends FacetHandler implements Facet
 
 	private static final class CompactMultiValueFacetCountCollector extends DefaultFacetCountCollector
 	{
-	  private final BigIntArray _array;
+	  private final BigSegmentedArray _array;
 	  private final int[] _combinationCount = new int[16 * 8];
 	  private int _noValCount = 0;
 	  private boolean _aggregated = false;

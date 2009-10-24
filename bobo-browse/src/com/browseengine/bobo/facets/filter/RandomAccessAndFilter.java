@@ -2,13 +2,11 @@ package com.browseengine.bobo.facets.filter;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.DocIdSetIterator;
-import org.apache.lucene.search.Filter;
 
 import com.browseengine.bobo.docidset.RandomAccessDocIdSet;
 import com.kamikaze.docidset.impl.AndDocIdSet;

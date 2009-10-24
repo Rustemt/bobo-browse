@@ -10,13 +10,13 @@ import com.browseengine.bobo.api.BrowseFacet;
 import com.browseengine.bobo.api.FacetSpec;
 import com.browseengine.bobo.facets.FacetCountCollector;
 import com.browseengine.bobo.facets.data.FacetDataCache;
-import com.browseengine.bobo.util.BigIntArray;
+import com.browseengine.bobo.util.BigSegmentedArray;
 
 public class RangeFacetCountCollector implements FacetCountCollector
 {
   private final FacetSpec _ospec;
   private int[] _count;
-  private final BigIntArray _array;
+  private final BigSegmentedArray _array;
   private final FacetDataCache _dataCache;
   private final String _name;
   private final boolean _autoRange;

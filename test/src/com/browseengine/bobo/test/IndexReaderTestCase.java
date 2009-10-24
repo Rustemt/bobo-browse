@@ -3,6 +3,7 @@ package com.browseengine.bobo.test;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,6 +13,12 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 
 import com.browseengine.bobo.api.BoboBrowser;
@@ -212,7 +219,29 @@ public class IndexReaderTestCase extends TestCase {
 		long end=System.currentTimeMillis();
 		System.out.println("test 1 took: "+(end-start));
 	}
-	public static void main(String[] args) {
+	
+	public void testFastMatchAllDocs() throws Exception{
+		  File idxFile = new File("/Users/jwang/dataset/idx");
+		  Directory idxDir = FSDirectory.getDirectory(idxFile);
+		
+	      BoboIndexReader reader = BoboIndexReader.getInstance(IndexReader.open(idxDir));
+	      IndexSearcher searcher = new IndexSearcher(reader);
+	      
+	      //Query q = reader.getFastMatchAllDocsQuery();
+	      //Query q = new MatchAllDocsQuery();
+	      
+	      QueryParser qp = new QueryParser("contents",new StandardAnalyzer());
+	      Query q = qp.parse("*:*");
+	      TopDocs topDocs = searcher.search(q, 100);
+	      assertEquals(reader.numDocs(), topDocs.totalHits);
+	      reader.close();
+		}
+
+	public static void main(String[] args) throws Exception{
+		IndexReaderTestCase test = new IndexReaderTestCase();
+		test.testFastMatchAllDocs();
+	}
+	public static void main2(String[] args) {
 		for (int i=0;i<20;i++)
 		{
 			test1();

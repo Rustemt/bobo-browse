@@ -13,7 +13,6 @@ import org.apache.lucene.search.ScoreDocComparator;
 import com.browseengine.bobo.api.BoboIndexReader;
 import com.browseengine.bobo.api.BrowseFacet;
 import com.browseengine.bobo.api.BrowseSelection;
-import com.browseengine.bobo.api.FacetAccessible;
 import com.browseengine.bobo.api.FacetSpec;
 import com.browseengine.bobo.facets.FacetCountCollector;
 import com.browseengine.bobo.facets.FacetHandler;
@@ -24,7 +23,7 @@ import com.browseengine.bobo.facets.filter.EmptyFilter;
 import com.browseengine.bobo.facets.filter.FacetOrFilter;
 import com.browseengine.bobo.facets.filter.RandomAccessFilter;
 import com.browseengine.bobo.facets.filter.RandomAccessNotFilter;
-import com.browseengine.bobo.util.BigIntArray;
+import com.browseengine.bobo.util.BigSegmentedArray;
 
 public class PathFacetHandler extends FacetHandler implements FacetHandlerFactory 
 {
@@ -270,7 +269,7 @@ public class PathFacetHandler extends FacetHandler implements FacetHandlerFactor
 		private int[] _count;
 		private final String _name;
 		private final String _sep;
-		private final BigIntArray _orderArray;
+		private final BigSegmentedArray _orderArray;
 		private final FacetDataCache _dataCache;
 		
 		PathFacetCountCollector(String name,String sep,BrowseSelection sel,FacetSpec ospec,FacetDataCache dataCache)

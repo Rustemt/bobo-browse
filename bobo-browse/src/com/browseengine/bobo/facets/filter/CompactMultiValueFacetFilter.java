@@ -8,7 +8,7 @@ import org.apache.lucene.search.DocIdSetIterator;
 import com.browseengine.bobo.docidset.EmptyDocIdSet;
 import com.browseengine.bobo.docidset.RandomAccessDocIdSet;
 import com.browseengine.bobo.facets.data.FacetDataCache;
-import com.browseengine.bobo.util.BigIntArray;
+import com.browseengine.bobo.util.BigSegmentedArray;
 
 public class CompactMultiValueFacetFilter extends RandomAccessFilter {
 	/**
@@ -19,7 +19,7 @@ public class CompactMultiValueFacetFilter extends RandomAccessFilter {
 	private final FacetDataCache _dataCache;
 	private int _bits;
 	private final int[] _index;
-	private final BigIntArray _orderArray;
+	private final BigSegmentedArray _orderArray;
 	
 	public CompactMultiValueFacetFilter(FacetDataCache dataCache,int index)
     {
@@ -43,7 +43,7 @@ public class CompactMultiValueFacetFilter extends RandomAccessFilter {
 	    private final int _bits;
 	    private int _doc;
 	    private int _maxID;
-	    private final BigIntArray _orderArray;
+	    private final BigSegmentedArray _orderArray;
 	    
 		public CompactMultiValueFacetDocIdSetIterator(FacetDataCache dataCache,int[] index,int bits) {
 			_bits = bits;

@@ -78,6 +78,7 @@ import com.browseengine.bobo.api.MultiBoboBrowser;
 import com.browseengine.bobo.api.BrowseSelection.ValueOperation;
 import com.browseengine.bobo.api.FacetSpec.FacetSortSpec;
 import com.browseengine.bobo.facets.FacetHandler;
+import com.browseengine.bobo.facets.FacetHandler.TermCountSize;
 import com.browseengine.bobo.facets.data.PredefinedTermListFactory;
 import com.browseengine.bobo.facets.data.TermListFactory;
 import com.browseengine.bobo.facets.impl.CompactMultiValueFacetHandler;
@@ -378,7 +379,12 @@ public class BoboTestCase extends TestCase {
 	public static List<FacetHandler> buildFieldConf(){
 		List<FacetHandler> facetHandlers = new ArrayList<FacetHandler>();
 		facetHandlers.add(new SimpleFacetHandler("id"));
-		facetHandlers.add(new SimpleFacetHandler("color"));
+		SimpleFacetHandler colorHandler = new SimpleFacetHandler("color");
+		colorHandler.setTermCountSize(TermCountSize.small);
+		facetHandlers.add(colorHandler);
+
+		SimpleFacetHandler shapeHandler = new SimpleFacetHandler("shape");
+		colorHandler.setTermCountSize(TermCountSize.medium);
 		facetHandlers.add(new SimpleFacetHandler("shape"));
 		facetHandlers.add(new RangeFacetHandler("size", true));
 		String[] ranges = new String[]{"[000000 TO 000005]", "[000006 TO 000010]", "[000011 TO 000020]"};

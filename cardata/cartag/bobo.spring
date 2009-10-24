@@ -2,13 +2,15 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-
+	
 	<bean id="color" class="com.browseengine.bobo.facets.impl.SimpleFacetHandler">
 		<constructor-arg value="color" />
+		<property name="termCountSize" value="small"/>
 	</bean>
 	
 	<bean id="category" class="com.browseengine.bobo.facets.impl.SimpleFacetHandler">
 		<constructor-arg value="category" />
+		<property name="termCountSize" value="medium"/>
 	</bean>
 	
 	<bean id="city" class="com.browseengine.bobo.facets.impl.PathFacetHandler">

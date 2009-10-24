@@ -13,7 +13,7 @@ import com.browseengine.bobo.api.FieldValueAccessor;
 import com.browseengine.bobo.api.FacetSpec.FacetSortSpec;
 import com.browseengine.bobo.facets.FacetCountCollector;
 import com.browseengine.bobo.facets.data.FacetDataCache;
-import com.browseengine.bobo.util.BigIntArray;
+import com.browseengine.bobo.util.BigSegmentedArray;
 import com.browseengine.bobo.util.BoundedPriorityQueue;
 
 public abstract class DefaultFacetCountCollector implements FacetCountCollector
@@ -23,7 +23,7 @@ public abstract class DefaultFacetCountCollector implements FacetCountCollector
   protected final FacetDataCache _dataCache;
   private final String _name;
   protected final BrowseSelection _sel;
-  protected final BigIntArray _array;
+  protected final BigSegmentedArray _array;
   
   public DefaultFacetCountCollector(BrowseSelection sel,FacetDataCache dataCache,String name,FacetSpec ospec)
   {

@@ -7,7 +7,7 @@ import org.apache.lucene.search.DocIdSetIterator;
 
 import com.browseengine.bobo.docidset.RandomAccessDocIdSet;
 import com.browseengine.bobo.facets.data.FacetDataCache;
-import com.browseengine.bobo.util.BigIntArray;
+import com.browseengine.bobo.util.BigSegmentedArray;
 
 public final class FacetRangeFilter extends RandomAccessFilter 
 {
@@ -32,7 +32,7 @@ public final class FacetRangeFilter extends RandomAccessFilter
 		private int _maxID = -1;
 		private final int _start;
 		private final int _end;
-		private final BigIntArray _orderArray;
+		private final BigSegmentedArray _orderArray;
 		
 		
 		FacetRangeDocIdSetIterator(int start,int end,FacetDataCache dataCache)
