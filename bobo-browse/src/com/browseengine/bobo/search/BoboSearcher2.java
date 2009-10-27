@@ -79,6 +79,11 @@ public class BoboSearcher2 extends BoboSearcher{
                 {
                   facetCollector._more = false;
                   facetCollector._doc = Integer.MAX_VALUE;
+                  
+                  // move this to front so that the call can find the failure faster
+                  FacetHitCollector tmp = _collectors[0];
+                  _collectors[0] = facetCollector;
+                  _collectors[i] = tmp;
                 }
               }  
             }

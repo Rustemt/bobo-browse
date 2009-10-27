@@ -69,15 +69,17 @@ public class InternalBrowseHitCollector extends TopDocsSortedHitCollector
   
   private void fillInRuntimeFacetValues(BrowseHit[] hits)
   {
-    Map<String,FacetHandler> runtimeFacetHandlerMap = _boboBrowser.getRuntimeFacetHandlerMap();
+    Collection<FacetHandler> runtimeFacetHandlers = _boboBrowser.getRuntimeFacetHandlerMap().values();
     for (BrowseHit hit : hits)
     {
-      for (FacetHandler facetHandler : runtimeFacetHandlerMap.values())
+      Map<String,String[]> map = hit.getFieldValues();
+      int docid = hit.getDocid();
+      for (FacetHandler facetHandler : runtimeFacetHandlers)
       {
-        String[] values = facetHandler.getFieldValues(hit.getDocid());
-        if (values != null && hit.getFieldValues() != null)
+        String[] values = facetHandler.getFieldValues(docid);
+        if (values != null)
         {
-          hit.getFieldValues().put(facetHandler.getName(), values);
+          map.put(facetHandler.getName(), values);
         }
       }
     }
@@ -92,8 +94,9 @@ public class InternalBrowseHitCollector extends TopDocsSortedHitCollector
   
   public BrowseHit[] buildHits(FieldDoc[] fdocs) throws IOException
   {
-    ArrayList<BrowseHit> hitList = new ArrayList<BrowseHit>(fdocs.length);
-
+    BrowseHit[] hits = new BrowseHit[fdocs.length];
+    int i = 0;
+    
     Collection<FacetHandler> facetHandlers= _reader.getFacetHandlerMap().values();
     for (FieldDoc fdoc : fdocs)
     {
@@ -120,9 +123,8 @@ public class InternalBrowseHitCollector extends TopDocsSortedHitCollector
           }
         }
       }
-      hitList.add(hit);
+      hits[i++] = hit;
     }
-    BrowseHit[] hits = hitList.toArray(new BrowseHit[hitList.size()]);
     fillInRuntimeFacetValues(hits);
     return hits;
   }
