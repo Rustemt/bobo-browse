@@ -311,7 +311,13 @@ public class BoboBrowser extends BoboSearcher2 implements Browsable
 
     long start = System.currentTimeMillis();
 
-    TopDocsSortedHitCollector myHC = getSortedHitCollector(req.getSort(), req.getOffset(), req.getCount(),req.isFetchStoredFields());
+    int offset = req.getOffset();
+    int count = req.getCount();
+    
+    if (offset<0 || count<0){
+    	throw new IllegalArgumentException("both offset and count must be > 0: "+offset+"/"+count);
+    }
+    TopDocsSortedHitCollector myHC = getSortedHitCollector(req.getSort(),offset,count,req.isFetchStoredFields());
     Map<String, FacetAccessible> facetCollectors = new HashMap<String, FacetAccessible>();
     browse(req, myHC, facetCollectors);
     BrowseHit[] hits = null;
