@@ -102,7 +102,7 @@ public class SimpleFacetHandler extends FacetHandler implements FacetHandlerFact
     int[] indexes = FacetDataCache.convert(_dataCache,vals);
     if(indexes.length > 1)
     {
-      return new FacetOrFilter(_dataCache,FacetDataCache.convert(_dataCache,vals),isNot);
+      return new FacetOrFilter(_dataCache,indexes,isNot);
     }
     else if(indexes.length == 1)
     {
