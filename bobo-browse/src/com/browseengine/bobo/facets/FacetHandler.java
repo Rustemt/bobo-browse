@@ -355,6 +355,8 @@ public abstract class FacetHandler implements Cloneable
 	 */
 	abstract public String[] getFieldValues(int id);
 	
+	abstract public Object[] getRawFieldValues(int id);
+	
 	/**
 	 * Gets a single field value
 	 * @param id doc

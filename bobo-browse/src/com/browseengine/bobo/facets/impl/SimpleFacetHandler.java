@@ -23,7 +23,6 @@ import com.browseengine.bobo.facets.filter.RandomAccessFilter;
 import com.browseengine.bobo.facets.filter.RandomAccessNotFilter;
 import com.browseengine.bobo.query.scoring.BoboDocScorer;
 import com.browseengine.bobo.query.scoring.FacetScoreable;
-import com.browseengine.bobo.query.scoring.FacetTermScoringFunction;
 import com.browseengine.bobo.query.scoring.FacetTermScoringFunctionFactory;
 
 public class SimpleFacetHandler extends FacetHandler implements FacetHandlerFactory,FacetScoreable
@@ -71,6 +70,11 @@ public class SimpleFacetHandler extends FacetHandler implements FacetHandlerFact
 		return new String[]{_dataCache.valArray.get(_dataCache.orderArray.get(id))};
 	}
 
+	@Override
+	public Object[] getRawFieldValues(int id){
+		return new Object[]{_dataCache.valArray.getRawValue(_dataCache.orderArray.get(id))};
+	}
+	
   @Override
   public RandomAccessFilter buildRandomAccessFilter(String value, Properties prop) throws IOException
   {

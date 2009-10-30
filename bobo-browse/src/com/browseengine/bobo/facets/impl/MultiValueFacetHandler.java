@@ -122,6 +122,12 @@ public class MultiValueFacetHandler extends FacetHandler implements FacetHandler
   {
     return _dataCache._nestedArray.getTranslatedData(id, _dataCache.valArray);
   }
+  
+  @Override
+  public Object[] getRawFieldValues(int id){
+    return new Object[]{_dataCache._nestedArray.getRawData(id, _dataCache.valArray)};
+  }
+
 
   @Override
   public FacetCountCollector getFacetCountCollector(BrowseSelection sel, FacetSpec ospec)  

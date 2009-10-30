@@ -66,7 +66,12 @@ public class FacetHandlerTest extends TestCase {
 		public void load(BoboIndexReader reader) throws IOException {
 			
 		}
-		
+
+		@Override
+		public Object[] getRawFieldValues(int id) {
+			// TODO Auto-generated method stub
+			return null;
+		}
 	}
 	
 	public FacetHandlerTest(String testname)

@@ -409,6 +409,17 @@ public class BoboBrowser extends BoboSearcher2 implements Browsable
       return doc.getValues(fieldname);
     }
   }
+  
+
+  public Object[] getRawFieldVal(int docid,String fieldname) throws IOException{
+	  FacetHandler facetHandler = getFacetHandler(fieldname);
+	  if (facetHandler==null){
+		  return getFieldVal(docid,fieldname);
+	  }
+	  else{
+		  return facetHandler.getRawFieldValues(docid);
+	  }
+  }
 
   public TopDocsSortedHitCollector getSortedHitCollector(SortField[] sort,
                                                          int offset,

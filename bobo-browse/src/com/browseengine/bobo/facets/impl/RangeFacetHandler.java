@@ -114,6 +114,11 @@ public class RangeFacetHandler extends FacetHandler implements FacetHandlerFacto
 		return new String[]{_dataCache.valArray.get(_dataCache.orderArray.get(id))};
 	}
 	
+	@Override
+	public Object[] getRawFieldValues(int id){
+		return new Object[]{_dataCache.valArray.getRawValue(_dataCache.orderArray.get(id))};
+	}
+
 	private static String[] getRangeStrings(String rangeString)
 	{
 	  int index=rangeString.indexOf('[');

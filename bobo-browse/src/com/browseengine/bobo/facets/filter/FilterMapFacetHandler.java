@@ -144,4 +144,9 @@ public class FilterMapFacetHandler extends FacetHandler
     
   }
 
+  @Override
+  public Object[] getRawFieldValues(int id) {
+	return getFieldValues(id);
+  }
+
 }

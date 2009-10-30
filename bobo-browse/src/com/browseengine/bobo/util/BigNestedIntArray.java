@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.lucene.util.OpenBitSet;
 
+import com.browseengine.bobo.facets.data.TermValueList;
 import com.browseengine.bobo.query.scoring.FacetTermScoringFunction;
 
 /**
@@ -394,7 +395,7 @@ public final class BigNestedIntArray
    * @param valarray
    * @return
    */
-  public final String[] getTranslatedData(int id, List<String> valarray)
+  public final String[] getTranslatedData(int id, TermValueList valarray)
   {
     final int[] page = _list[id >> PAGEID_SHIFT];
     
@@ -408,9 +409,7 @@ public final class BigNestedIntArray
     
       if(val >= 0)
       {
-        String[] ret = new String[1];
-        ret[0] = valarray.get(val);
-        return ret;
+        return new String[]{valarray.get(val)};
       }
       else if(val == MISSING)
       {
@@ -425,6 +424,49 @@ public final class BigNestedIntArray
         for(int i = 0; i < num; i++)
         {
           ret[i] = valarray.get(page[i - val]);
+        }
+        return ret;
+      }
+    }
+  }
+  
+  /**
+   * translates the int value using the val list
+   * @param <T>
+   * @param array
+   * @param id
+   * @param valarray
+   * @return
+   */
+  public final Object[] getRawData(int id, TermValueList valarray)
+  {
+    final int[] page = _list[id >> PAGEID_SHIFT];
+    
+    if(page == null)
+    {
+      return EMPTY;
+    }
+    else
+    {
+      int val = page[id & SLOTID_MASK];
+    
+      if(val >= 0)
+      {
+    	return new Object[]{valarray.getRawValue(val)};
+      }
+      else if(val == MISSING)
+      {
+        return EMPTY;
+      }
+      else
+      {
+        final int num = (val & COUNT_MASK);
+        val >>= VALIDX_SHIFT; // signed shift, remember this is a negative number
+    
+        Object[] ret = new Object[num];
+        for(int i = 0; i < num; i++)
+        {
+          ret[i] = valarray.getRawValue(page[i - val]);
         }
         return ret;
       }

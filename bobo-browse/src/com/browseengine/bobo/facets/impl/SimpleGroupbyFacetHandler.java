@@ -96,6 +96,11 @@ public class SimpleGroupbyFacetHandler extends FacetHandler implements FacetHand
 		}
 		return valList.toArray(new String[valList.size()]);
 	}
+	
+	@Override
+	public Object[] getRawFieldValues(int id){
+		return getFieldValues(id);
+	}
 
 	@Override
 	public ScoreDocComparator getScoreDocComparator() {

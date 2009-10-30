@@ -29,7 +29,9 @@ public interface Browsable extends Searchable
 	
 	void setSimilarity(Similarity similarity);
 	
-	String[] getFieldVal(int docid, final String fieldname) throws IOException;
+	String[] getFieldVal(int docid,String fieldname) throws IOException;
+	
+	Object[] getRawFieldVal(int docid,String fieldname) throws IOException;
 	
 	int numDocs();
 	

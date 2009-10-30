@@ -71,6 +71,10 @@ public abstract class TermValueList implements List<String>{
 	public String get(int index) {
 		return format(_innerList.get(index));
 	}
+	
+	public Object getRawValue(int index){
+		return _innerList.get(index);
+	}
 
 	abstract public int indexOf(Object o);
 

@@ -158,6 +158,28 @@ public class CompactMultiValueFacetHandler extends FacetHandler implements Facet
 		}
 	}
 
+    @Override
+	public Object[] getRawFieldValues(int id){
+    	int encoded=_dataCache.orderArray.get(id);
+		if (encoded==0) {
+			return new Object[0];
+		}
+		else{
+			int count=1;
+			ArrayList<Object> valList=new ArrayList<Object>(MAX_VAL_COUNT);
+			
+			while(encoded != 0)
+			{
+				if ((encoded & 0x00000001) != 0x0){
+					valList.add(_dataCache.valArray.getRawValue(count));
+				}
+				count++;
+				encoded >>>= 1;
+			}
+			return valList.toArray(new Object[valList.size()]);
+		}
+	}
+    
 	@Override
 	public FacetCountCollector getFacetCountCollector(BrowseSelection sel,
 			FacetSpec ospec) {

@@ -113,6 +113,12 @@ public class PathFacetHandler extends FacetHandler implements FacetHandlerFactor
 		return new String[]{_dataCache.valArray.get(_dataCache.orderArray.get(id))};
 	}
 	
+	@Override
+	public Object[] getRawFieldValues(int id){
+		return getFieldValues(id);
+	}
+
+	
 	public void setSeparator(String separator)
 	{
 		_separator = separator;

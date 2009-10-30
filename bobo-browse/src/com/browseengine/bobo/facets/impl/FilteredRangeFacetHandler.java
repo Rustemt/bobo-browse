@@ -57,6 +57,11 @@ public class FilteredRangeFacetHandler extends FacetHandler implements FacetHand
 	public String[] getFieldValues(int id) {
 		return _innerHandler.getFieldValues(id);
 	}
+	
+	@Override
+	public Object[] getRawFieldValues(int id){
+		return _innerHandler.getRawFieldValues(id);
+	}
 
 	@Override
 	public ScoreDocComparator getScoreDocComparator() {

@@ -2,29 +2,21 @@ package com.browseengine.bobo.api;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.search.FieldDoc;
 import org.apache.lucene.search.HitCollector;
 import org.apache.lucene.search.MultiSearcher;
-import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.SortField;
 
 import com.browseengine.bobo.facets.FacetHandler;
-import com.browseengine.bobo.impl.SortedFieldBrowseHitComparator;
 import com.browseengine.bobo.search.MultiTopDocsSortedHitCollector;
-import com.browseengine.bobo.util.ListMerger;
 
 
 /**
@@ -62,7 +54,6 @@ public class MultiBoboBrowser extends MultiSearcher implements Browsable
     Map<String, List<FacetAccessible>> mergedMap = new HashMap<String,List<FacetAccessible>>();
     try
     {
-
 	    Map<String,FacetAccessible> facetColMap = new HashMap<String,FacetAccessible>();
 	    for (int i = 0; i < browsers.length; i++)
 	    {
@@ -179,12 +170,13 @@ public class MultiBoboBrowser extends MultiSearcher implements Browsable
     Browsable browser = getSubBrowsers()[i];
     return browser.getFieldVal(subDoc(docid),fieldname);
   }
-  
-  public int[] getStarts()
-  {
-    return super.getStarts();
-  }
 
+
+  public Object[] getRawFieldVal(int docid,String fieldname) throws IOException{
+	  int i = subSearcher(docid);
+	  Browsable browser = getSubBrowsers()[i];
+	  return browser.getRawFieldVal(subDoc(docid),fieldname);
+  }
   /**
    * Gets the array of sub-browsers
    * 
@@ -195,6 +187,16 @@ public class MultiBoboBrowser extends MultiSearcher implements Browsable
   {
     return (Browsable[])getSearchables();
   }
+  
+  
+
+  @Override
+  public int[] getStarts() {
+	// TODO Auto-generated method stub
+	return super.getStarts();
+  }
+
+
 
   /**
    * Compare BrowseFacets by their value
