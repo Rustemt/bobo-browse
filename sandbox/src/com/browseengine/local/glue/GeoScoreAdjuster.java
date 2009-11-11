@@ -25,6 +25,8 @@
 
 package com.browseengine.local.glue;
 
+import org.apache.lucene.search.FieldDoc;
+
 import com.browseengine.bobo.score.ScoreAdjuster;
 import com.browseengine.local.glue.GeoSearchFieldPlugin.GeoPluginFieldData;
 import com.browseengine.local.service.Locatable;
@@ -78,6 +80,15 @@ public class GeoScoreAdjuster implements ScoreAdjuster {
 		} else {
 			return 0f;
 		}
+	}
+
+	public FieldDoc adjustScoreDoc(int docid,float origScore) {
+	    FieldDoc fieldDoc = new FieldDoc(docid, origScore);
+	    return adjustScoreDoc(fieldDoc);
+	}
+	public FieldDoc adjustScoreDoc(FieldDoc docid) {
+	    docid.score = adjustScore(docid.doc, docid.score);
+	    return docid;
 	}
 
 }

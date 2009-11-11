@@ -2,7 +2,7 @@
  * Bobo Browse Engine - High performance faceted/parametric search implementation 
  * that handles various types of semi-structured data.  Written in Java.
  * 
- * Copyright (C) 2005-2006  spackle
+ * Copyright (C) 2005-2006  John Wang
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,34 +20,54 @@
  * 
  * To contact the project administrators for the bobo-browse project, 
  * please go to https://sourceforge.net/projects/bobo-browse/, or 
- * contact owner@browseengine.com.
+ * send mail to owner@browseengine.com.
  */
 
-package com.browseengine.local.glue;
+package com.browseengine.bobo.util;
 
-import org.apache.log4j.Logger;
+import java.lang.reflect.Array;
 
-import com.browseengine.bobo.fields.FieldRegistry;
+public class LongArray extends PrimitiveArray {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
-/**
- * @author spackle
- *
- */
-public class BrowseGeoSearchInitializer {
-	private static final Logger LOGGER = Logger.getLogger(BrowseGeoSearchInitializer.class);
+	public LongArray(int len) {
+		super(long.class,len);		
+	}	
 	
-	public static void init() {
-		registerSelf();
+	public LongArray(){
+		super(long.class);
 	}
 	
-	public static void registerSelf() {
-		String fieldType = null;
-		try {
-			fieldType = GeoSearchFieldPlugin.getTypeString();
-			FieldRegistry registry = FieldRegistry.getInstance();
-			registry.registerFieldPlugin(fieldType, GeoSearchFieldPlugin.class);
-		} catch (Exception e) {
-			LOGGER.debug("probably already registered: "+fieldType, e);
+	public void set(int index,long n){
+		ensureCapacity(index);
+		Array.setLong(_array,index,n);
+		_count=Math.max(_count, index+1);
+	}		
+	
+	public long get(int index){
+		return Array.getLong(_array, index);
+	}
+	
+	public synchronized void add(long n){		
+		ensureCapacity(_count+1);			
+		Array.setLong(_array,_count,n);
+		_count++;
+	}
+	
+	public boolean contains(long elem){
+		int size=this.size();
+		for (int i=0;i<size;++i){
+			if (get(i)==elem) return true;
 		}
+		return false;
+	}
+	
+	public synchronized long[] toArray(){		
+		long[] ret=new long[_count];		
+		System.arraycopy(_array,0,ret,0,_count);
+		return ret;		
 	}
 }

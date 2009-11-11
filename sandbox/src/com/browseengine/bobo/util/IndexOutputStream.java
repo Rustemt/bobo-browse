@@ -2,7 +2,7 @@
  * Bobo Browse Engine - High performance faceted/parametric search implementation 
  * that handles various types of semi-structured data.  Written in Java.
  * 
- * Copyright (C) 2005-2006  spackle
+ * Copyright (C) 2005-2006  John Wang
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,34 +20,35 @@
  * 
  * To contact the project administrators for the bobo-browse project, 
  * please go to https://sourceforge.net/projects/bobo-browse/, or 
- * contact owner@browseengine.com.
+ * send mail to owner@browseengine.com.
  */
 
-package com.browseengine.local.glue;
+package com.browseengine.bobo.util;
 
-import org.apache.log4j.Logger;
+import java.io.IOException;
+import java.io.OutputStream;
 
-import com.browseengine.bobo.fields.FieldRegistry;
+import org.apache.lucene.store.IndexOutput;
 
-/**
- * @author spackle
- *
- */
-public class BrowseGeoSearchInitializer {
-	private static final Logger LOGGER = Logger.getLogger(BrowseGeoSearchInitializer.class);
-	
-	public static void init() {
-		registerSelf();
+public class IndexOutputStream extends OutputStream {
+	private IndexOutput _output;
+	public IndexOutputStream(IndexOutput indexOut) {
+		super();
+		_output=indexOut;
 	}
-	
-	public static void registerSelf() {
-		String fieldType = null;
-		try {
-			fieldType = GeoSearchFieldPlugin.getTypeString();
-			FieldRegistry registry = FieldRegistry.getInstance();
-			registry.registerFieldPlugin(fieldType, GeoSearchFieldPlugin.class);
-		} catch (Exception e) {
-			LOGGER.debug("probably already registered: "+fieldType, e);
+
+	@Override
+	public void write(int b) throws IOException {
+		_output.writeByte((byte)b);
+	}
+
+	@Override
+	public void close() throws IOException {
+		try{
+			super.close();
+		}
+		finally{
+			_output.close();
 		}
 	}
 }

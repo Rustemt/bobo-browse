@@ -30,17 +30,16 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import com.browseengine.bobo.cache.FieldDataCache;
-import com.browseengine.bobo.fields.FieldPlugin;
-import com.browseengine.bobo.index.BoboIndexReader;
+import com.browseengine.bobo.api.BoboIndexReader;
+import com.browseengine.bobo.api.BrowseException;
+import com.browseengine.bobo.api.BrowseRequest;
+import com.browseengine.bobo.api.BrowseSelection;
+import com.browseengine.bobo.facets.FacetHandler;
 import com.browseengine.bobo.score.ChainedScoreAdjuster;
 import com.browseengine.bobo.score.ScoreAdjuster;
 import com.browseengine.bobo.score.ScoreAdjusterFactory;
-import com.browseengine.bobo.service.BrowseRequest;
-import com.browseengine.bobo.service.BrowseSelection;
-import com.browseengine.bobo.service.FieldConfiguration;
-import com.browseengine.bobo.service.BrowseService.BrowseException;
 import com.browseengine.local.glue.GeoSearchFieldPlugin.GeoPluginFieldData;
 import com.browseengine.local.service.Locatable;
 import com.browseengine.local.service.LonLat;
@@ -59,20 +58,15 @@ public class GeoScoreAdjusterFactory implements ScoreAdjusterFactory {
 	
 	public void setBoboIndexReader(BoboIndexReader reader) {
 		geoFields = new Hashtable<String,GeoPluginFieldData>();
-		FieldConfiguration fConf=reader.getFieldConfiguration();
-		String[] fieldNames=fConf.getFieldNames();
-		
-		String geoFldType = new GeoSearchFieldPlugin().getTypeString();
-		if (geoFldType != null) {
-			for (String fieldName : fieldNames){
-				FieldPlugin plugin=fConf.getFieldPlugin(fieldName);			
-				String fldType = plugin.getTypeString();
-				if (fldType != null) {
-					FieldDataCache fieldDataCache = reader.getIndexData().getFieldDataCache(fieldName);
-					GeoPluginFieldData data = (GeoPluginFieldData)fieldDataCache.getUserObject();
-					geoFields.put(fieldName, data);
-				}
-			}
+		Set<String> facetNames = reader.getFacetNames();
+		for (String facetName : facetNames) {
+		    FacetHandler facetHandler = reader.getFacetHandler(facetName);
+		    if (facetHandler instanceof GeoSearchFieldPlugin) {
+		        GeoSearchFieldPlugin geoFacetHandler = (GeoSearchFieldPlugin)facetHandler;
+		        GeoPluginFieldData geoFieldPluginData = geoFacetHandler.getGeoPluginFieldData();
+		        String fieldName = facetHandler.getName();
+		        geoFields.put(fieldName, geoFieldPluginData);
+		    }
 		}
 	}
 	

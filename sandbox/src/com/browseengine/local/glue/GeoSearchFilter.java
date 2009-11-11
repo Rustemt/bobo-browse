@@ -29,8 +29,14 @@ import java.io.IOException;
 import java.util.BitSet;
 
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.DocIdSetIterator;
 
-import com.browseengine.bobo.filter.CacheableFilter;
+import com.browseengine.bobo.docidset.BitsetDocSet;
+import com.browseengine.bobo.docidset.OpenBitsetDocSet;
+import com.browseengine.bobo.docidset.RandomAccessDocIdSet;
+import com.browseengine.bobo.facets.filter.EmptyFilter;
+import com.browseengine.bobo.facets.filter.RandomAccessFilter;
+import com.browseengine.bobo.facets.filter.RandomAccessNotFilter;
 import com.browseengine.local.glue.GeoSearchFieldPlugin.GeoPluginFieldData;
 import com.browseengine.local.service.Locatable;
 import com.browseengine.local.service.LonLat;
@@ -43,7 +49,7 @@ import com.browseengine.local.service.index.GeoSearchFields;
  * @author spackle
  *
  */
-public class GeoSearchFilter extends CacheableFilter {
+public class GeoSearchFilter extends RandomAccessFilter {
 	/**
 	 * 
 	 */
@@ -65,12 +71,10 @@ public class GeoSearchFilter extends CacheableFilter {
 		this(lonLat,centroid.getLongitudeDeg(),centroid.getLatitudeDeg(),rangeInMiles);
 	}
 	
-	@Override
 	public String getFieldName() {
 		return _lonLats.fieldName;
 	}
 
-	@Override
 	public String getFieldValue() {
 		return new StringBuilder().
 		  append('(').append(_lonDegrees).append(',').
@@ -78,7 +82,6 @@ public class GeoSearchFilter extends CacheableFilter {
 		  append(_rangeInMiles).append(')').toString();
 	}
 
-	@Override
 	public String getKey() {
 		return new StringBuilder().
 		  append(getFieldName()).append(':').
@@ -111,16 +114,39 @@ public class GeoSearchFilter extends CacheableFilter {
 	 * compute distance here if it is between the inner box and outer 
 	 * box.
 	 */
-	public BitSet makeBitSet(IndexReader reader) throws IOException {
+	public RandomAccessDocIdSet makeBitSet(IndexReader reader) throws IOException {
 		if (_rangeInMiles < 0f) {
 			// all bits on by default
-			int maxDoc = reader.maxDoc();
-			BitSet bits = new BitSet(maxDoc);
-			bits.set(0, maxDoc);
-			return bits;
+		    EmptyFilter emptyFilter = EmptyFilter.getInstance();
+		    
+		    // 
+		    RandomAccessNotFilter notFilter = new RandomAccessNotFilter(emptyFilter);
+		    return notFilter.getRandomAccessDocIdSet(reader);
 		}
-		return makeBitSetFast(reader);
+		final OpenBitsetDocSet bitsetDocSet = makeBitSetFast(reader);
+		RandomAccessDocIdSet randomAccessDocIdSet = new RandomAccessDocIdSet() {
+
+            @Override
+            public boolean get(int docId) {
+                return bitsetDocSet.get(docId);
+            }
+
+            @Override
+            public DocIdSetIterator iterator() {
+                return bitsetDocSet.iterator();
+            }
+		    
+		};
+		return randomAccessDocIdSet;
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	public RandomAccessDocIdSet getRandomAccessDocIdSet(IndexReader reader) throws IOException {
+	    return makeBitSet(reader);
+	}
+
 	
 	/**
 	 * The fastest way to make the bit set.  The rule is that iff it is 
@@ -136,7 +162,7 @@ public class GeoSearchFilter extends CacheableFilter {
 	 * @return
 	 * @throws IOException
 	 */
-	public BitSet makeBitSetFast(IndexReader reader) throws IOException {
+	public OpenBitsetDocSet makeBitSetFast(IndexReader reader) throws IOException {
 		int maxDoc = reader.maxDoc();
 		BitSet bits = new BitSet(maxDoc);
 		Locatable centroid = LonLat.getLonLatDeg(_lonDegrees, _latDegrees);
@@ -157,7 +183,7 @@ public class GeoSearchFilter extends CacheableFilter {
 				bits.set(i);
 			}
 		}
-		return bits;
+		return toDocSet(bits);
 	}
 
 	private static final double SQRT_TWO = Math.sqrt(2);
@@ -180,7 +206,7 @@ public class GeoSearchFilter extends CacheableFilter {
 	 * @return
 	 * @throws IOException
 	 */
-	public BitSet makeBitSetMoreAccurate(IndexReader reader) throws IOException {
+	public BitsetDocSet makeBitSetMoreAccurate(IndexReader reader) throws IOException {
 		int maxDoc = reader.maxDoc();
 		BitSet bits = new BitSet(maxDoc);
 		Locatable centroid = LonLat.getLonLatDeg(_lonDegrees, _latDegrees);
@@ -220,8 +246,18 @@ public class GeoSearchFilter extends CacheableFilter {
 				}
 			}
 		}
-		return bits;
-
+		return toDocSet(bits);
+	}	
+	
+	/**
+	 * Convert the BitSet into an OpenBitsetDocSet.
+	 * 
+	 * @param bits
+	 * @return
+	 */
+	private OpenBitsetDocSet toDocSet(BitSet bits) {
+	    OpenBitsetDocSet openBitsetDocSet = new OpenBitsetDocSet(bits);
+		return openBitsetDocSet;
 	}
 	
 	/**
@@ -235,7 +271,7 @@ public class GeoSearchFilter extends CacheableFilter {
 	 * @return
 	 * @throws IOException
 	 */
-	public BitSet makeBitSetCompletelyAccurate(IndexReader reader) throws IOException {
+	public BitsetDocSet makeBitSetCompletelyAccurate(IndexReader reader) throws IOException {
 		int maxDoc = reader.maxDoc();
 		BitSet bits = new BitSet(maxDoc);
 		Locatable centroid = LonLat.getLonLatDeg(_lonDegrees, _latDegrees);
@@ -262,7 +298,7 @@ public class GeoSearchFilter extends CacheableFilter {
 				}
 			}
 		}
-		return bits;
+		return toDocSet(bits);
 		
 	}
 }

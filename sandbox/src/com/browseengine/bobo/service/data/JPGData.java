@@ -23,31 +23,36 @@
  * contact owner@browseengine.com.
  */
 
-package com.browseengine.local.glue;
+package com.browseengine.bobo.service.data;
 
-import org.apache.log4j.Logger;
-
-import com.browseengine.bobo.fields.FieldRegistry;
+import java.io.InputStream;
 
 /**
+ * Represents JPG image content bytes.
+ * For use in only one thread.
+ * 
  * @author spackle
  *
  */
-public class BrowseGeoSearchInitializer {
-	private static final Logger LOGGER = Logger.getLogger(BrowseGeoSearchInitializer.class);
-	
-	public static void init() {
-		registerSelf();
+public class JPGData extends BinaryData {
+	public JPGData() {
+		super();
+	}
+	public JPGData(InputStream is) {
+		super(is);
+	}
+
+	public JPGData(InputStream is, int contentLength) {
+		super(is,contentLength);
 	}
 	
-	public static void registerSelf() {
-		String fieldType = null;
-		try {
-			fieldType = GeoSearchFieldPlugin.getTypeString();
-			FieldRegistry registry = FieldRegistry.getInstance();
-			registry.registerFieldPlugin(fieldType, GeoSearchFieldPlugin.class);
-		} catch (Exception e) {
-			LOGGER.debug("probably already registered: "+fieldType, e);
-		}
+	public JPGData(byte[] bytes) {
+		super(bytes);
 	}
+	
+	private static final String CONTENT_TYPE = "image/jpeg";
+	public String getContentType() {
+		return CONTENT_TYPE;
+	}
+
 }

@@ -23,31 +23,16 @@
  * contact owner@browseengine.com.
  */
 
-package com.browseengine.local.glue;
+package com.browseengine.bobo.util;
 
-import org.apache.log4j.Logger;
-
-import com.browseengine.bobo.fields.FieldRegistry;
 
 /**
  * @author spackle
  *
  */
-public class BrowseGeoSearchInitializer {
-	private static final Logger LOGGER = Logger.getLogger(BrowseGeoSearchInitializer.class);
-	
-	public static void init() {
-		registerSelf();
-	}
-	
-	public static void registerSelf() {
-		String fieldType = null;
-		try {
-			fieldType = GeoSearchFieldPlugin.getTypeString();
-			FieldRegistry registry = FieldRegistry.getInstance();
-			registry.registerFieldPlugin(fieldType, GeoSearchFieldPlugin.class);
-		} catch (Exception e) {
-			LOGGER.debug("probably already registered: "+fieldType, e);
-		}
-	}
+public interface CachingScheme<K,V> {
+	V cacheObject(K key, V value);
+	V getObject(K key);
+	V invalidate(K key);
+	void clear();
 }

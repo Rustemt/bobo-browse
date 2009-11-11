@@ -19,35 +19,28 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * 
  * To contact the project administrators for the bobo-browse project, 
- * please go to https://sourceforge.net/projects/bobo-browse/, or 
- * contact owner@browseengine.com.
+ * please go to https://sourceforge.net/projects/bobo-browse/.
+ * <or other contact info for bobo-browse; snail mail/email/both>
  */
 
-package com.browseengine.local.glue;
+package com.browseengine.bobo.crawl;
 
-import org.apache.log4j.Logger;
-
-import com.browseengine.bobo.fields.FieldRegistry;
+import java.io.IOException;
+import java.net.URL;
 
 /**
  * @author spackle
  *
  */
-public class BrowseGeoSearchInitializer {
-	private static final Logger LOGGER = Logger.getLogger(BrowseGeoSearchInitializer.class);
-	
-	public static void init() {
-		registerSelf();
-	}
-	
-	public static void registerSelf() {
-		String fieldType = null;
-		try {
-			fieldType = GeoSearchFieldPlugin.getTypeString();
-			FieldRegistry registry = FieldRegistry.getInstance();
-			registry.registerFieldPlugin(fieldType, GeoSearchFieldPlugin.class);
-		} catch (Exception e) {
-			LOGGER.debug("probably already registered: "+fieldType, e);
-		}
-	}
+public interface HttpContentHandler {
+	/**
+	 * Callback function for what the crawler should do with a block of 
+	 * content retrieved from the specified URL, in basic float crawling.
+	 * 
+	 * @param url
+	 * @param content
+	 * @return true iff content was handled successfully
+	 * @exception IOException if I/O trouble handling the content
+	 */
+	boolean handleContent(URL url, String content) throws IOException;
 }

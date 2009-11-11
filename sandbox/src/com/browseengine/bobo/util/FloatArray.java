@@ -2,7 +2,7 @@
  * Bobo Browse Engine - High performance faceted/parametric search implementation 
  * that handles various types of semi-structured data.  Written in Java.
  * 
- * Copyright (C) 2005-2006  spackle
+ * Copyright (C) 2005-2006  John Wang
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,34 +20,47 @@
  * 
  * To contact the project administrators for the bobo-browse project, 
  * please go to https://sourceforge.net/projects/bobo-browse/, or 
- * contact owner@browseengine.com.
+ * send mail to owner@browseengine.com.
  */
 
-package com.browseengine.local.glue;
+package com.browseengine.bobo.util;
 
-import org.apache.log4j.Logger;
+import java.lang.reflect.Array;
 
-import com.browseengine.bobo.fields.FieldRegistry;
-
-/**
- * @author spackle
- *
- */
-public class BrowseGeoSearchInitializer {
-	private static final Logger LOGGER = Logger.getLogger(BrowseGeoSearchInitializer.class);
+public class FloatArray extends PrimitiveArray{
 	
-	public static void init() {
-		registerSelf();
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public FloatArray(int len) {
+		super(float.class,len);		
+	}	
+	
+	public FloatArray(){
+		super(float.class);
 	}
 	
-	public static void registerSelf() {
-		String fieldType = null;
-		try {
-			fieldType = GeoSearchFieldPlugin.getTypeString();
-			FieldRegistry registry = FieldRegistry.getInstance();
-			registry.registerFieldPlugin(fieldType, GeoSearchFieldPlugin.class);
-		} catch (Exception e) {
-			LOGGER.debug("probably already registered: "+fieldType, e);
-		}
+	public void set(int index,float n){
+		ensureCapacity(index);
+		Array.setFloat(_array,index,n);
+		_count=Math.max(_count, index+1);
+	}	
+	
+	public float get(int index){
+		return Array.getFloat(_array, index);
 	}
+	
+	public synchronized void add(float n){		
+		ensureCapacity(_count+1);		
+		Array.setFloat(_array,_count,n);
+		_count++;
+	}
+	
+	public synchronized float[] toArray(){
+		float[] ret=new float[_count];
+		System.arraycopy(_array,0,ret,0,_count);
+		return ret;
+	}	
 }

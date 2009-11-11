@@ -27,26 +27,27 @@ package com.browseengine.local.glue;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.BitSet;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.ScoreDocComparator;
 
-import com.browseengine.bobo.cache.FieldDataCache;
-import com.browseengine.bobo.fields.ChoiceCollection;
-import com.browseengine.bobo.fields.FieldPlugin;
-import com.browseengine.bobo.index.BoboIndexReader;
-import com.browseengine.bobo.service.BrowseSelection;
-import com.browseengine.bobo.service.BrowseRequest.OutputSpec;
-import com.browseengine.bobo.service.BrowseResult.ChoiceContainer;
-import com.browseengine.local.service.Conversions;
+import com.browseengine.bobo.api.BoboIndexReader;
+import com.browseengine.bobo.api.BrowseFacet;
+import com.browseengine.bobo.api.BrowseSelection;
+import com.browseengine.bobo.api.FacetSpec;
+import com.browseengine.bobo.facets.FacetCountCollector;
+import com.browseengine.bobo.facets.FacetHandler;
+import com.browseengine.bobo.facets.filter.RandomAccessFilter;
+import com.browseengine.bobo.facets.filter.RandomAccessOrFilter;
 import com.browseengine.local.service.geosearch.GeoSearchImpl;
 import com.browseengine.local.service.geosearch.GeoSearchingException;
+import com.browseengine.local.service.index.GeoSearchFields;
 
 /**
  * The GeoSearchField is a virtual field that is actually the concatenation of two valid 
@@ -58,7 +59,7 @@ import com.browseengine.local.service.geosearch.GeoSearchingException;
  * @author spackle
  *
  */
-public class GeoSearchFieldPlugin extends FieldPlugin {
+public class GeoSearchFieldPlugin extends FacetHandler {
 	private static final Logger LOGGER = Logger.getLogger(GeoSearchFieldPlugin.class);	
 	private static final String FIELD_TYPE = "geosearch";
 	
@@ -71,6 +72,7 @@ public class GeoSearchFieldPlugin extends FieldPlugin {
 	 * @author spackle
 	 *
 	 */
+	/*
 	private static class GeoSearchCollection extends ChoiceCollection{
 		private GeoPluginFieldData _geoData;
 		public GeoSearchCollection(String name, GeoPluginFieldData data) {
@@ -116,6 +118,71 @@ public class GeoSearchFieldPlugin extends FieldPlugin {
 			return new String[0];
 		}
 	}
+	*/
+	
+	/**
+	 * Returns a dummy facet count collector.
+	 * May be a place to add dividing into distance buckets in the future.
+	 * 
+	 * {@inheritDoc}
+	 */
+	public FacetCountCollector getFacetCountCollector(BrowseSelection sel, FacetSpec fspec) {
+	    return new GeoFacetCountCollector(getFieldName());
+	}
+	
+	private static class GeoFacetCountCollector implements FacetCountCollector {
+	    private String name;
+	    public GeoFacetCountCollector(String name) {
+	        this.name = name;
+	    }
+        /**
+         * {@inheritDoc}
+         */
+        public void collect(int docid) {
+            // TODO Auto-generated method stub
+            
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void collectAll() {
+            // TODO Auto-generated method stub
+            
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public int[] getCountDistribution() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public BrowseFacet getFacet(String value) {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public List<BrowseFacet> getFacets() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+	    
+	}
 	
 	static class GeoPluginFieldData implements Serializable{
 
@@ -140,10 +207,42 @@ public class GeoSearchFieldPlugin extends FieldPlugin {
 		String fieldName;
 		int[] lons;
 		int[] lats;
+		
+		String getLatitudeString(int docid) {
+		    int lat = lats[docid];
+		    return toDoubleToString(lat);
+		}
+		String getLongitudeString(int docid) {
+		    int lon = lons[docid];
+		    return toDoubleToString(lon);
+		}
+		private String toDoubleToString(int lonOrLatAsInt) {
+		    return String.valueOf(GeoSearchFields.intToDub(lonOrLatAsInt));
+		}
 	}
 
-	@Override
-	public Filter[] buildFilters(String fieldname, String[] vals) {
+	public GeoSearchFieldPlugin(String fieldName) {
+	    super(fieldName);
+	}
+	
+	/**
+	 * Use cautiously.  okay to use for reading, but don't modify it.
+	 * 
+	 * @return
+	 */
+	GeoPluginFieldData getGeoPluginFieldData() {
+	    return _lonLats;
+	}
+	
+	public RandomAccessFilter buildRandomAccessFilter(String value, Properties selectionProperty) throws IOException {
+	    String[] vals = {
+	            value
+	    };
+	    final String fieldName = getFieldName();
+	    return buildFilters(fieldName, vals);
+	}
+
+	public RandomAccessFilter buildFilters(String fieldname, String[] vals) {
 		if (_lonLats == null) {
 			throw new IllegalStateException("you must initialize a "+getClass()+
 					" before getting filters from it, by first calling loadFieldDataCache!");
@@ -164,14 +263,25 @@ public class GeoSearchFieldPlugin extends FieldPlugin {
 			}
 			LOGGER.warn(buf.toString());
 		}
-		Filter[] filters = new Filter[vals.length];
-		for (int i = 0; i < vals.length; i++) {
-			filters[i] = new GeoSearchFilter(_lonLats,sels[i].getLon(),sels[i].getLat(),sels[i].getRangeInMiles());
+		RandomAccessFilter randomAccessFilter;
+		if (null != sels && sels.length == 1) {
+		    randomAccessFilter = getGeoSearchFilter(sels[0]);
+		} else {
+		    int count = null != sels ? sels.length : 0;
+		    List<RandomAccessFilter> geoFilters = new ArrayList<RandomAccessFilter>(sels.length);
+		    for (int i =  0; i < count; i++) {
+		        geoFilters.add(getGeoSearchFilter(sels[i]));
+		    }
+		    randomAccessFilter = new RandomAccessOrFilter(geoFilters);
 		}
-		return filters;
+		return randomAccessFilter;
+	}
+	
+	private RandomAccessFilter getGeoSearchFilter(GeoSearchSelection sel) {
+	    GeoSearchFilter geoSearchFilter = new GeoSearchFilter(_lonLats, sel.getLon(), sel.getLat(), sel.getRangeInMiles());
+	    return geoSearchFilter;
 	}
 
-	@Override
 	public BrowseSelection buildSelection(String fieldname, String[] values) {
 		if (values!=null && values.length>2){
 			BrowseSelection sel=new BrowseSelection(fieldname);
@@ -186,9 +296,9 @@ public class GeoSearchFieldPlugin extends FieldPlugin {
 	}
 
 	@Override
-	public ScoreDocComparator getComparator(FieldDataCache fieldDataCache) {
+	public ScoreDocComparator getScoreDocComparator() {
+        // there is no pre-defined geographic sort order; it is different for each search context
 		return null;
-		// there is no pre-defined geographic sort order; it is different for each search context
 		/*
 		Object userData=fieldDataCache.getUserObject();
 		if (userData instanceof GeoPluginFieldData){
@@ -200,25 +310,38 @@ public class GeoSearchFieldPlugin extends FieldPlugin {
 		*/
 	}
 
-	@Override
-	public String getTypeString() {
+	public static String getTypeString() {
 		return FIELD_TYPE;
 	}
-
+	
+	private String getFieldName() {
+	    return getName();
+	}
+	
+	public String[] getFieldValues(int docid) {
+	    return new String[] {
+	        _lonLats.getLongitudeString(docid)+","+_lonLats.getLatitudeString(docid)
+	    };
+	}
+	
+	public Object[] getRawFieldValues(int docid) {
+	    return getFieldValues(docid);
+	}
 
 	/**
 	 * this method _must_ be called first, before building any filters with this.
 	 * we should be okay, since we are called by BoboIndexReader constructor.
 	 */
-	public void loadFieldDataCache(FieldDataCache fieldDataCache, BoboIndexReader reader) throws IOException {
+	public void load(BoboIndexReader reader) throws IOException {
 		try {
-			_lonLats=new GeoPluginFieldData(reader,fieldDataCache.getFieldName());
-			fieldDataCache.setUserObject(_lonLats);
+			_lonLats=new GeoPluginFieldData(reader,getFieldName());
+//			fieldDataCache.setUserObject(_lonLats);
 		} catch (GeoSearchingException gse) {
 			throw new IOException("trouble loading field data cache: "+gse.toString());
 		}
 	}
 
+    /*
 	@Override
 	public ChoiceCollection newCollection(FieldDataCache fieldDataCache) {
 		GeoPluginFieldData data=(GeoPluginFieldData)fieldDataCache.getUserObject();
@@ -240,10 +363,10 @@ public class GeoSearchFieldPlugin extends FieldPlugin {
 		// no preloaded results--we don't know where the user is gonna search from
 	}
 
-	/**
+	/ **
 	 * probably pointless to support NOT operator to find things "far away".
 	 * hence, we return <code>false</code>.
-	 */
+	 * /
 	public boolean supportNotSelections() {
 		return false;
 	}
@@ -258,5 +381,5 @@ public class GeoSearchFieldPlugin extends FieldPlugin {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+    */
 }
