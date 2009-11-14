@@ -23,7 +23,12 @@ public class MultiValueORFacetFilter extends RandomAccessFilter
   private final OpenBitSet _bitset;
   private final int[] _index;
   
-  public MultiValueORFacetFilter(MultiValueFacetDataCache dataCache,int[] index)
+
+  public MultiValueORFacetFilter(MultiValueFacetDataCache dataCache,int[] index){
+	  this(dataCache,index,false);
+  }
+  
+  public MultiValueORFacetFilter(MultiValueFacetDataCache dataCache,int[] index,boolean takeCompliment)
   {
     _dataCache = dataCache;
     _nestedArray = dataCache._nestedArray;
@@ -33,6 +38,10 @@ public class MultiValueORFacetFilter extends RandomAccessFilter
     {
       _bitset.fastSet(i);
     }  
+    if (takeCompliment)
+    {
+      _bitset.flip(0, _dataCache.valArray.size());
+    }
   }
   
   private final static class MultiValueFacetDocIdSetIterator extends FacetOrDocIdSetIterator

@@ -205,6 +205,8 @@ public class BoboTestCase extends TestCase {
 		d1.add(buildMetaField("compactnum","001"));
 		d1.add(buildMetaField("compactnum","003"));
 		d1.add(buildMetaField("numendorsers","000003"));
+		d1.add(buildMetaField("path","a-b"));
+		d1.add(buildMetaField("multipath","a-b"));
 		
 		Document d2=new Document();
 		d2.add(buildMetaField("id","2"));
@@ -227,6 +229,9 @@ public class BoboTestCase extends TestCase {
 		d2.add(buildMetaField("compactnum","002"));
 		d2.add(buildMetaField("compactnum","004"));
 		d2.add(buildMetaField("numendorsers","000010"));
+		d2.add(buildMetaField("path","a-c-d"));
+		d2.add(buildMetaField("multipath","a-c-d"));
+		d2.add(buildMetaField("multipath","a-b"));
 		
 		Document d3=new Document();
 		d3.add(buildMetaField("id","3"));
@@ -249,6 +254,9 @@ public class BoboTestCase extends TestCase {
 		d3.add(buildMetaField("compactnum","007"));
 		d3.add(buildMetaField("compactnum","012"));
 		d3.add(buildMetaField("numendorsers","000015"));
+		d3.add(buildMetaField("path","a-e"));
+		d3.add(buildMetaField("multipath","a-e"));
+		d3.add(buildMetaField("multipath","a-b"));
 		
 		Document d4=new Document();
 		d4.add(buildMetaField("id","4"));
@@ -271,6 +279,9 @@ public class BoboTestCase extends TestCase {
 		d4.add(buildMetaField("multinum","007"));
 		d4.add(buildMetaField("compactnum","007"));
 		d4.add(buildMetaField("numendorsers","000019"));
+		d4.add(buildMetaField("path","a-c"));
+		d4.add(buildMetaField("multipath","a-c"));
+		d4.add(buildMetaField("multipath","a-b"));
 		
 		Document d5=new Document();
 		d5.add(buildMetaField("id","5"));
@@ -293,6 +304,9 @@ public class BoboTestCase extends TestCase {
 		d5.add(buildMetaField("compactnum","001"));
 		d5.add(buildMetaField("compactnum","001"));
 		d5.add(buildMetaField("numendorsers","000002"));
+		d5.add(buildMetaField("path","a-e-f"));
+		d5.add(buildMetaField("multipath","a-e-f"));
+		d5.add(buildMetaField("multipath","a-b"));
 		
 		Document d6=new Document();
 		d6.add(buildMetaField("id","6"));
@@ -317,6 +331,9 @@ public class BoboTestCase extends TestCase {
 		d6.add(buildMetaField("compactnum","002"));
 		d6.add(buildMetaField("compactnum","003"));
 		d6.add(buildMetaField("numendorsers","000009"));
+		d6.add(buildMetaField("path","a-c-d"));
+		d6.add(buildMetaField("multipath","a-c-d"));
+		d6.add(buildMetaField("multipath","a-b"));
 		
 		Document d7=new Document();
 		d7.add(buildMetaField("id","7"));
@@ -339,6 +356,10 @@ public class BoboTestCase extends TestCase {
 		d7.add(buildMetaField("compactnum","008"));
 		d7.add(buildMetaField("compactnum","003"));
 		d7.add(buildMetaField("numendorsers","000013"));
+		d7.add(buildMetaField("path","a-c"));
+		d7.add(buildMetaField("multipath","a-c"));
+		d7.add(buildMetaField("multipath","a-b"));
+		
 		
 		dataList.add(d1);
 		dataList.add(d2);
@@ -393,6 +414,15 @@ public class BoboTestCase extends TestCase {
 		PredefinedTermListFactory numTermFactory = new PredefinedTermListFactory(Integer.class, "0000");
 
 		facetHandlers.add(new PathFacetHandler("location"));
+		
+		PathFacetHandler pathHandler = new PathFacetHandler("path");
+		pathHandler.setSeparator("-");
+		facetHandlers.add(pathHandler);
+		
+
+		PathFacetHandler multipathHandler = new PathFacetHandler("multipath",true);
+		multipathHandler.setSeparator("-");
+		facetHandlers.add(multipathHandler);
 		
 		facetHandlers.add(new SimpleFacetHandler("number", numTermFactory));
 		facetHandlers.add(new RangeFacetHandler("date", new PredefinedTermListFactory(Date.class, "yyyy/MM/dd"), Arrays.asList(new String[]{"[2000/01/01 TO 2003/05/05]", "[2003/05/06 TO 2005/04/04]"})));
@@ -558,6 +588,122 @@ public class BoboTestCase extends TestCase {
 		answer.put("shape", Arrays.asList(new BrowseFacet[]{new BrowseFacet("rectangle",1),new BrowseFacet("square",2)}));
 		
 		doTest(br,2,answer,new String[]{"1","7"});
+	}
+	
+	public void testPath() throws Exception{
+		BrowseRequest br=new BrowseRequest();
+		br.setCount(10);
+		br.setOffset(0);
+
+        BrowseSelection sel=new BrowseSelection("path");
+        sel.addValue("a");
+        Properties prop = sel.getSelectionProperties();
+        PathFacetHandler.setDepth(prop, 1);
+        br.addSelection(sel); 
+		
+		FacetSpec pathSpec=new FacetSpec();
+		pathSpec.setOrderBy(FacetSortSpec.OrderValueAsc);
+		br.setFacetSpec("path", pathSpec);
+		
+		HashMap<String,List<BrowseFacet>> answer=new HashMap<String,List<BrowseFacet>>();
+		answer.put("path", Arrays.asList(new BrowseFacet[]{new BrowseFacet("a-b",1),new BrowseFacet("a-c",4),new BrowseFacet("a-e",2)}));
+		doTest(br,7,answer,null);
+		
+		pathSpec.setOrderBy(FacetSortSpec.OrderHitsDesc);
+		answer=new HashMap<String,List<BrowseFacet>>();
+		answer.put("path", Arrays.asList(new BrowseFacet[]{new BrowseFacet("a-c",4),new BrowseFacet("a-e",2),new BrowseFacet("a-b",1)}));
+		doTest(br,7,answer,null);
+		
+		pathSpec.setMaxCount(2);
+		answer=new HashMap<String,List<BrowseFacet>>();
+		answer.put("path", Arrays.asList(new BrowseFacet[]{new BrowseFacet("a-c",4),new BrowseFacet("a-e",2)}));
+		doTest(br,7,answer,null);
+	}
+	
+	public void testMultiPath() throws Exception{
+		BrowseRequest br=new BrowseRequest();
+		br.setCount(10);
+		br.setOffset(0);
+
+        BrowseSelection sel=new BrowseSelection("multipath");
+        sel.addValue("a");
+        Properties prop = sel.getSelectionProperties();
+        PathFacetHandler.setDepth(prop, 1);
+        br.addSelection(sel); 
+		
+		FacetSpec pathSpec=new FacetSpec();
+		pathSpec.setMaxCount(3);
+		
+		pathSpec.setOrderBy(FacetSortSpec.OrderHitsDesc);
+		br.setFacetSpec("multipath", pathSpec);
+		
+		HashMap<String,List<BrowseFacet>> answer=new HashMap<String,List<BrowseFacet>>();
+		answer=new HashMap<String,List<BrowseFacet>>();
+		answer.put("multipath", Arrays.asList(new BrowseFacet[]{new BrowseFacet("a-b",7),new BrowseFacet("a-c",4),new BrowseFacet("a-e",2)}));
+		doTest(br,7,answer,null);
+	}
+	
+	public void testMultiSelectedPaths() throws Exception{
+		BrowseRequest br=new BrowseRequest();
+		br.setCount(10);
+		br.setOffset(0);
+
+        BrowseSelection sel=new BrowseSelection("path");
+        sel.addValue("a-c");
+        sel.addValue("a-e");
+        Properties prop = sel.getSelectionProperties();
+        PathFacetHandler.setDepth(prop, 1);
+        PathFacetHandler.setStrict(prop, true);
+        br.addSelection(sel); 
+		
+		FacetSpec pathSpec=new FacetSpec();
+		pathSpec.setMaxCount(3);
+		
+		pathSpec.setOrderBy(FacetSortSpec.OrderHitsDesc);
+		br.setFacetSpec("path", pathSpec);
+		
+		HashMap<String,List<BrowseFacet>> answer=new HashMap<String,List<BrowseFacet>>();
+		answer=new HashMap<String,List<BrowseFacet>>();
+		answer.put("path", Arrays.asList(new BrowseFacet[]{new BrowseFacet("a-c-d",2),new BrowseFacet("a-e-f",1)}));
+		doTest(br,3,answer,null);
+		
+		pathSpec.setOrderBy(FacetSortSpec.OrderByCustom);
+		pathSpec.setCustomComparatorFactory(new ComparatorFactory(){
+
+			public Comparator<Integer> newComparator(
+					FieldValueAccessor fieldValueAccessor, final int[] counts) {
+				return new Comparator<Integer>(){
+
+					public int compare(Integer f1, Integer f2) {
+						int val = counts[f2] - counts[f1];
+						if (val==0)
+				        {
+				            val=f2-f1;
+				        }
+				        return val;
+					}
+					
+				};
+			}
+
+			public Comparator<BrowseFacet> newComparator() {
+				return new Comparator<BrowseFacet>(){
+					public int compare(BrowseFacet f1, BrowseFacet f2) {
+						int val = f2.getHitCount() - f1.getHitCount();
+						if (val==0)
+				        {
+				            val=f1.getValue().compareTo(f2.getValue());
+				        }
+				        return val;
+					}	
+				};
+			}
+			
+		});
+		
+		answer=new HashMap<String,List<BrowseFacet>>();
+		answer.put("path", Arrays.asList(new BrowseFacet[]{new BrowseFacet("a-e-f",1),new BrowseFacet("a-c-d",2)}));
+		doTest(br,3,answer,null);
 	}
 	
 	public void testTagRollup(){

@@ -3,27 +3,31 @@ package com.browseengine.bobo.facets.impl;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.ScoreDocComparator;
 
+import com.browseengine.bobo.api.BoboBrowser;
 import com.browseengine.bobo.api.BoboIndexReader;
-import com.browseengine.bobo.api.BrowseFacet;
+import com.browseengine.bobo.api.BrowseRequest;
+import com.browseengine.bobo.api.BrowseResult;
 import com.browseengine.bobo.api.BrowseSelection;
 import com.browseengine.bobo.api.FacetSpec;
 import com.browseengine.bobo.facets.FacetCountCollector;
 import com.browseengine.bobo.facets.FacetHandler;
 import com.browseengine.bobo.facets.FacetHandlerFactory;
 import com.browseengine.bobo.facets.data.FacetDataCache;
+import com.browseengine.bobo.facets.data.MultiValueFacetDataCache;
 import com.browseengine.bobo.facets.data.TermListFactory;
 import com.browseengine.bobo.facets.filter.EmptyFilter;
 import com.browseengine.bobo.facets.filter.FacetOrFilter;
+import com.browseengine.bobo.facets.filter.MultiValueORFacetFilter;
 import com.browseengine.bobo.facets.filter.RandomAccessFilter;
 import com.browseengine.bobo.facets.filter.RandomAccessNotFilter;
-import com.browseengine.bobo.util.BigSegmentedArray;
 
 public class PathFacetHandler extends FacetHandler implements FacetHandlerFactory 
 {
@@ -31,14 +35,21 @@ public class PathFacetHandler extends FacetHandler implements FacetHandlerFactor
 	
 	public static final String SEL_PROP_NAME_STRICT="strict";
     public static final String SEL_PROP_NAME_DEPTH="depth";
+    
+    private final boolean _multiValue;
 	
 	private FacetDataCache _dataCache;
 	private final TermListFactory _termListFactory;
 	private String _separator;
 	
-	public PathFacetHandler(String name)
+	public PathFacetHandler(String name){
+		this(name,false);
+	}
+	
+	public PathFacetHandler(String name,boolean multiValue)
 	{
 		super(name);
+		_multiValue = multiValue;
 		_dataCache=null;
 		_termListFactory=TermListFactory.StringListFactory;
 		_separator=DEFAULT_SEP;
@@ -46,7 +57,7 @@ public class PathFacetHandler extends FacetHandler implements FacetHandlerFactor
 	
 	public FacetHandler newInstance()
 	{
-	  return new PathFacetHandler(getName());
+		return new PathFacetHandler(getName(),_multiValue);
 	}
 	
 	public final FacetDataCache getDataCache()
@@ -110,9 +121,14 @@ public class PathFacetHandler extends FacetHandler implements FacetHandlerFactor
 	@Override
 	public String[] getFieldValues(int id) 
 	{
-		return new String[]{_dataCache.valArray.get(_dataCache.orderArray.get(id))};
+		if (_multiValue){
+		  return ((MultiValueFacetDataCache)_dataCache)._nestedArray.getTranslatedData(id, _dataCache.valArray);	
+		}
+		else{
+		  return new String[]{_dataCache.valArray.get(_dataCache.orderArray.get(id))};
+		}
 	}
-	
+	 
 	@Override
 	public Object[] getRawFieldValues(int id){
 		return getFieldValues(id);
@@ -187,7 +203,7 @@ public class PathFacetHandler extends FacetHandler implements FacetHandlerFactor
     if (intSet.size()>0)
     {
       int[] indexes = intSet.toIntArray();
-      return new FacetOrFilter(_dataCache,indexes);
+      return _multiValue ? new MultiValueORFacetFilter((MultiValueFacetDataCache)_dataCache, indexes) : new FacetOrFilter(_dataCache,indexes);
     }
     else
     {
@@ -227,7 +243,7 @@ public class PathFacetHandler extends FacetHandler implements FacetHandlerFactor
       getFilters(intSet,vals,depth,strict);
       if (intSet.size()>0)
       {
-        return new FacetOrFilter(_dataCache,intSet.toIntArray(),isNot);
+    	return _multiValue ? new MultiValueORFacetFilter((MultiValueFacetDataCache)_dataCache, intSet.toIntArray(),isNot) : new FacetOrFilter(_dataCache,intSet.toIntArray(),isNot);
       }
       else
       {
@@ -256,194 +272,52 @@ public class PathFacetHandler extends FacetHandler implements FacetHandlerFactor
 	@Override
 	public FacetCountCollector getFacetCountCollector(BrowseSelection sel, FacetSpec ospec) 
 	{
-		return new PathFacetCountCollector(_name,_separator,sel,ospec,_dataCache);
+		return _multiValue ? new MultiValuedPathFacetCountCollector(_name, _separator, sel, ospec, _dataCache) : 
+							 new PathFacetCountCollector(_name,_separator,sel,ospec,_dataCache);
 	}
 
 	@Override
 	public void load(BoboIndexReader reader) throws IOException {
 	    if (_dataCache == null)
 	    {
-	      _dataCache = new FacetDataCache();
+	      if (!_multiValue){
+	        _dataCache = new FacetDataCache();
+	      }
+	      else{
+	    	  _dataCache = new MultiValueFacetDataCache();
+	      }
 	    }
 		_dataCache.load(_name, reader, _termListFactory);
 	}
 	
-	private final static class PathFacetCountCollector implements FacetCountCollector
-	{
-		private final BrowseSelection _sel;
-		private final FacetSpec _ospec;
-		private int[] _count;
-		private final String _name;
-		private final String _sep;
-		private final BigSegmentedArray _orderArray;
-		private final FacetDataCache _dataCache;
+	public static void main(String[] args) throws Exception{
+		/*String start = args[0];
+		int depth=Integer.parseInt(args[1]);
+		int count = Integer.parseInt(args[2]);
+		*/
+		String field ="makemodel";
+		String start="asian";
+		int depth = 100;
+		int count = 2;
 		
-		PathFacetCountCollector(String name,String sep,BrowseSelection sel,FacetSpec ospec,FacetDataCache dataCache)
-		{
-			_sel = sel;
-			_ospec=ospec;
-			_name = name;
-            _dataCache = dataCache;
-            _sep = sep;
-			_count=new int[_dataCache.freqs.length];
-			_orderArray = _dataCache.orderArray;
-		}
+		File idxDir = new File("/Users/john/opensource/bobo-trunk/cardata/cartag");
+		IndexReader reader = IndexReader.open(idxDir);
+		BoboIndexReader breader = BoboIndexReader.getInstance(reader);
 		
-		public int[] getCountDistribution()
-		{
-		  return _count;
+		BoboBrowser boboBrowse = new BoboBrowser(breader);
+		BrowseRequest req = new BrowseRequest();
+		BrowseSelection sel = new BrowseSelection(field);
+		if (start!=null){
+		  sel.addValue(start);
 		}
+		sel.setSelectionProperty(PathFacetHandler.SEL_PROP_NAME_DEPTH, String.valueOf(depth));
+		req.addSelection(sel);
+		FacetSpec fspec = new FacetSpec();
+		fspec.setMaxCount(count);
+		req.setFacetSpec(field, fspec);
 		
-		public String getName()
-		{
-			return _name;
-		}
-		
-		public final void collect(int docid) {
-			_count[_orderArray.get(docid)]++;
-		}
-		
-		public final void collectAll()
-		{
-		    _count = _dataCache.freqs; 
-		}
-		public BrowseFacet getFacet(String value)
-		{
-		  return null;	
-		}
-		
-		private List<BrowseFacet> getFacetsForPath(String selectedPath,int depth,boolean strict,int minCount)
-		{
-			LinkedList<BrowseFacet> list=new LinkedList<BrowseFacet>();
-			
-			String[] startParts=null;
-			int startDepth=0;
-			
-			if (selectedPath!=null && selectedPath.length()>0){					
-				startParts=selectedPath.split(_sep);
-				startDepth=startParts.length;		
-				if (!selectedPath.endsWith(_sep)){
-					selectedPath+=_sep;
-				}
-			}	
-			
-			String currentPath=null;
-			int currentCount=0;
-			
-			int wantedDepth=startDepth+depth;
-			
-			int index=0;
-			if (selectedPath!=null && selectedPath.length()>0){		
-				index=_dataCache.valArray.indexOf(selectedPath);
-				if (index<0)
-				{
-					index=-(index + 1);
-				}
-			}
-			
-			for (int i=index;i<_count.length;++i){
-				if (_count[i] >= minCount){
-					String path=_dataCache.valArray.get(i);
-					//if (path==null || path.equals(selectedPath)) continue;						
-					
-					int subCount=_count[i];
-				
-					String[] pathParts=path.split(_sep);
-					
-					int pathDepth=pathParts.length;
-								
-					if ((startDepth==0) || (startDepth>0 && path.startsWith(selectedPath))){
-							StringBuffer buf=new StringBuffer();
-							int minDepth=Math.min(wantedDepth, pathDepth);
-							for(int k=0;k<minDepth;++k){
-								buf.append(pathParts[k]);
-								if (!pathParts[k].endsWith(_sep)){
-									if (pathDepth!=wantedDepth || k<(wantedDepth-1))
-										buf.append(_sep);
-								}
-							}
-							String wantedPath=buf.toString();
-							if (currentPath==null){
-								currentPath=wantedPath;
-								currentCount=subCount;
-							}
-							else if (wantedPath.equals(currentPath)){
-								if (!strict){
-									currentCount+=subCount;
-								}
-							}
-							else{	
-								boolean directNode=false;
-								
-								if (wantedPath.endsWith(_sep)){
-									if (currentPath.equals(wantedPath.substring(0, wantedPath.length()-1))){
-										directNode=true;
-									}
-								}
-								
-								if (strict){
-									if (directNode){
-										currentCount+=subCount;
-									}
-									else{
-										BrowseFacet ch=new BrowseFacet(currentPath,currentCount);
-										list.add(ch);
-										currentPath=wantedPath;
-										currentCount=subCount;
-									}
-								}
-								else{
-									if (!directNode){
-										BrowseFacet ch=new BrowseFacet(currentPath,currentCount);
-										list.add(ch);
-										currentPath=wantedPath;
-										currentCount=subCount;
-									}
-									else{
-										currentCount+=subCount;
-									}
-								}
-							}
-					}
-					else{
-						break;
-					}
-				}
-			}
-			
-			if (currentPath!=null && currentCount>0){
-				list.add(new BrowseFacet(currentPath,currentCount));
-			}
-			
-			return list;
-		}
-
-		public List<BrowseFacet> getFacets() {
-			int minCount=_ospec.getMinHitCount();
-			
-			Properties props = _sel == null ? null : _sel.getSelectionProperties();
-			int depth = PathFacetHandler.getDepth(props);
-			boolean strict = PathFacetHandler.isStrict(props);
-			
-			String[] paths= _sel == null ? null : _sel.getValues();
-			if (paths==null || paths.length == 0)
-			{
-				return getFacetsForPath(null, depth, strict, minCount);
-			}
-			
-
-			LinkedList<BrowseFacet> finalList=new LinkedList<BrowseFacet>();
-			for (String path : paths)
-			{
-				List<BrowseFacet> subList=getFacetsForPath(path, depth, strict, minCount);
-				if (subList.size() > 0)
-				{
-				  finalList.addAll(subList);
-				}
-			}
-			return finalList;
-		}
-		
+		BrowseResult res = boboBrowse.browse(req);
+		System.out.println(res);
 	}
 
 }
