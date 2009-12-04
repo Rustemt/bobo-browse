@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="bobo-bench/src"/>
+	<classpathentry kind="src" path="bobo-perf/src"/>
 	<classpathentry kind="src" path="bobo-solr/src"/>
 	<classpathentry kind="src" path="bobo-browse/src"/>
 	<classpathentry kind="src" path="bobo-service/src"/>
@@ -30,5 +31,7 @@
 	<classpathentry kind="lib" path="lib/test/junit.jar"/>
 	<classpathentry kind="lib" path="lib/master/protobuf-java-2.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/master/zoie-1.4.1.jar"/>
+	<classpathentry kind="lib" path="bobo-perf/lib/commons-configuration-1.6.jar"/>
+	<classpathentry kind="lib" path="bobo-perf/lib/commons-lang-2.4.jar"/>
 	<classpathentry kind="output" path="output"/>
 </classpath>
