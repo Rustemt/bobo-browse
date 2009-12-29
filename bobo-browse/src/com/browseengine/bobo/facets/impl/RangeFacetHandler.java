@@ -126,11 +126,16 @@ public class RangeFacetHandler extends FacetHandler implements FacetHandlerFacto
       int index3=rangeString.indexOf(']');
       
       String lower,upper;
+      try{
+        lower=rangeString.substring(index+1,index2).trim();
+        upper=rangeString.substring(index2+4,index3).trim();
       
-      lower=rangeString.substring(index+1,index2).trim();
-      upper=rangeString.substring(index2+4,index3).trim();
-      
-      return new String[]{lower,upper};
+        return new String[]{lower,upper};
+      }
+      catch(RuntimeException re){
+        logger.error("problem parsing range string: "+rangeString+":"+re.getMessage(),re);
+        throw re;
+      }
 	}
 	
 	static int[] parse(FacetDataCache dataCache,String rangeString)
