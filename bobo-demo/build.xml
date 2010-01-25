@@ -10,7 +10,9 @@
         <property name="build" value="build"/>
 	    <property name="webapp" value="webapp"/>
 	    <property name="gwtc-out" value="gwtc-out"/>
-
+	
+	    <property name="demo.settings" value="settings" />
+	    <property name="demo.conf" value="conf"/>
 	
 	    <property file="${bobo.root}/version.properties" />
 	
@@ -73,15 +75,15 @@
 	  </target>
 
         <target name="dist" depends="gwtc">
+        	<copy file="${demo.settings}/index.properties" todir="${build}" />
+        	<replace file="${build}/index.properties" token="@bobo.root@" value="${bobo.root}" />
         	<war destfile="${dist}/bobo-demm-${version}.war" webxml="${webapp}/web.xml" >
         	                <fileset dir="${webapp}">
         	                        <exclude name="web.xml"/>
         	                </fileset>
         	                <fileset dir="${gwtc-out}"/>
         	                <classes dir="${build}"/>
-        		<!--
-        	                <classes dir="${conf.admin}"/>
-        	                -->
+        	                <classes dir="${demo.conf}"/>
         	                <lib dir="${lib.gui}" excludes="gwt-dev.jar"/>
         	                <lib dir="${lib.master}"/>
         	                <lib dir="${dist}" includes="bobo-browse-${version}.jar" />
