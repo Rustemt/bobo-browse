@@ -1,15 +1,15 @@
 <project name="bobo-service" default="dist">
 		<property name="bobo.root" location="../"/>
-		<property name="src" value="src"/>
+		<property name="service.src" value="src"/>
         <property name="lib.master" value="${bobo.root}/lib/master"/>
         <property name="dist" value="${bobo.root}/dist"/>
         <property name="build" value="build"/>
-        <property name="conf" value="conf"/>
-	    <property name="settings" value="settings"/>
+        <property name="service.conf" value="conf"/>
+	    <property name="service.settings" value="settings"/>
 
 	    <property file="${bobo.root}/version.properties" />
       
-	    <property name="web" value="web"/>
+	    <property name="service.web" value="web"/>
 		
         <path id="project.class.path">
             <fileset dir="${lib.master}">
@@ -30,7 +30,7 @@
 
         <target name="compile" depends="init">                
                 <javac debug="true" destdir="${build}">
-                    <src path="${src}"/>
+                    <src path="${service.src}"/>
                     <classpath refid="project.class.path"/>
                 </javac>
         </target>
@@ -40,10 +40,10 @@
 	    </target>
 	 		
         <target name="dist" depends="jar">
-        	<war destfile="${dist}/bobo-service-${version}.war" webxml="${web}/web.xml">
-        		<classes dir="${conf}"/>
-        		<classes dir="${settings}"/>
-				<webinf dir="${web}" />
+        	<war destfile="${dist}/bobo-service-${version}.war" webxml="${service.web}/web.xml">
+        		<classes dir="${service.conf}"/>
+        		<classes dir="${service.settings}"/>
+				<webinf dir="${service.web}" />
 	            <lib dir="${lib.master}"/>
 				<lib dir="${dist}">
 	            	<include name="bobo-browse*.jar"/>

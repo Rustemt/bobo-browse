@@ -8,7 +8,7 @@
 	    <property name="lib.gui" value="${lib.dir}/gui"/>
 	    <property name="dist" value="${bobo.root}/dist"/>
         <property name="build" value="build"/>
-	    <property name="webapp" value="webapp"/>
+	    <property name="demo.webapp" value="webapp"/>
 	    <property name="gwtc-out" value="gwtc-out"/>
 	
 	    <property name="demo.settings" value="settings" />
@@ -53,6 +53,7 @@
 	      <arg value="-startupUrl"/>
 	      <arg value="BoboDemo.html"/>
 	      <!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
+	      <arg line="-war ${dist}" />
 	      <arg value="com.browseengine.bobo.demo.BoboDemo"/>
 	    </java>
 	  </target>
@@ -77,8 +78,8 @@
         <target name="dist" depends="gwtc">
         	<copy file="${demo.settings}/index.properties" todir="${build}" />
         	<replace file="${build}/index.properties" token="@bobo.root@" value="${bobo.root}" />
-        	<war destfile="${dist}/bobo-demm-${version}.war" webxml="${webapp}/web.xml" >
-        	                <fileset dir="${webapp}">
+        	<war destfile="${dist}/bobo-demo.war" webxml="${demo.webapp}/web.xml" >
+        	                <fileset dir="${demo.webapp}">
         	                        <exclude name="web.xml"/>
         	                </fileset>
         	                <fileset dir="${gwtc-out}"/>

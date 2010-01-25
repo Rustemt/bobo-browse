@@ -187,6 +187,11 @@
 					 dir="${bobo-demo}" target="dist"/>
 	</target>
 	
+	<target name="bobo-demo-dev" depends="jars">
+		<ant antfile="build.xml"
+							 dir="${bobo-demo}" target="hosted"/>
+	</target>
+	
 	<target name="run-cardemo"  depends="dist,make-car-war" > 
 		<mkdir dir="${logs}" />
 		<java fork="true" jar="${bobo.root}/zoie-server.jar" failonerror="true" maxmemory="1000m">
@@ -209,7 +214,7 @@
 		</java>
 	</target>
 	
-	<target name="run-server"  depends="bobo-demo" > 
+	<target name="run-server"> <!--  depends="bobo-demo" > --> 
 		<mkdir dir="${logs}" />
 		<java fork="true" jar="${bobo.root}/zoie-server.jar" failonerror="true" maxmemory="1000m">
 								<sysproperty key="log.home" value="${logs}" />
