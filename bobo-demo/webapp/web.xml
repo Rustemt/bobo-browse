@@ -31,7 +31,7 @@
   
   <!-- Default page to serve -->
   <welcome-file-list>
-    <welcome-file>ZoieAdmin.html</welcome-file>
+    <welcome-file>BoboDemo.html</welcome-file>
   </welcome-file-list>
 
 </web-app>

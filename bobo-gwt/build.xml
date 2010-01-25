@@ -5,6 +5,7 @@
         <property name="lib.gui" value="${bobo.root}/lib/gui"/>
 	    <property name="dist" value="${bobo.root}/dist"/>
         <property name="build" value="build"/>
+        <property name="gwtc-out" value="gwtc-out"/>
 	
 	    <property file="${bobo.root}/version.properties" />
 	
@@ -13,9 +14,7 @@
                 <include name="*.jar"/>
 			</fileset>
         	<fileset dir="${lib.gui}" includes="*.jar"/>
-        	<fileset dir="${dist}">
-        	   <include name="bobo=browse-${version}.jar" />
-        	</fileset>
+        	<fileset dir="${dist}" includes="bobo-browse-${version}.jar"/>
         </path>
 
         <target name="clean">
@@ -31,6 +30,9 @@
                       <src path="${gwt.src}"/>
                       <classpath refid="project.class.path"/>
                 </javac>
+        		<copy todir="${build}">
+        	      <fileset dir="${gwt.src}"/>
+        	    </copy>
         </target>
 
         <target name="dist" depends="compile">

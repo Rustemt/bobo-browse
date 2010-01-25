@@ -58,6 +58,10 @@
 		<ant antfile="build.xml"
 			 dir="${bobo-browse}" target="clean"/>
 		<ant antfile="build.xml"
+					 dir="${bobo-gwt}" target="clean"/>
+			<ant antfile="build.xml"
+						 dir="${bobo-demo}" target="clean"/>
+		<ant antfile="build.xml"
 			 dir="${bobo-service}" target="clean"/>
 		<ant antfile="build.xml"
 					 dir="${bobo-solr}" target="clean"/>

@@ -41,6 +41,9 @@
                       <src path="${demo.src}"/>
                       <classpath refid="project.class.path"/>
                 </javac>
+        	    <copy todir="${build}">
+        	      <fileset dir="${demo.src}" excludes="**/*.java"/>
+        	    </copy>
         </target>
 	
 	  <target name="devmode" depends="compile" description="Run development mode">
