@@ -1,0 +1,40 @@
+<project name="bobo-gwt" default="dist">
+	    <property name="bobo.root" location="../"/>
+		<property name="gwt.src" value="src"/>
+        <property name="lib.master" value="${bobo.root}/lib/master"/>
+        <property name="lib.gui" value="${bobo.root}/lib/gui"/>
+	    <property name="dist" value="${bobo.root}/dist"/>
+        <property name="build" value="build"/>
+	
+	    <property file="${bobo.root}/version.properties" />
+	
+        <path id="project.class.path">
+            <fileset dir="${lib.master}">
+                <include name="*.jar"/>
+			</fileset>
+        	<fileset dir="${lib.gui}" includes="*.jar"/>
+        	<fileset dir="${dist}">
+        	   <include name="bobo=browse-${version}.jar" />
+        	</fileset>
+        </path>
+
+        <target name="clean">
+                <delete dir="${build}"/>
+        </target>
+
+        <target name="init">
+                <mkdir dir="${build}"/>
+        </target>
+
+        <target name="compile" depends="init">                
+                <javac debug="true" destdir="${build}">
+                      <src path="${gwt.src}"/>
+                      <classpath refid="project.class.path"/>
+                </javac>
+        </target>
+
+        <target name="dist" depends="compile">
+        		<mkdir dir="${dist}" />
+                <jar destfile="${dist}/bobo-gwt-${version}.jar"  basedir="${build}" />
+        </target>
+</project>
