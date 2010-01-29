@@ -21,6 +21,7 @@ import com.browseengine.bobo.facets.FacetCountCollector;
 import com.browseengine.bobo.facets.FacetHandler;
 import com.browseengine.bobo.facets.FacetHandlerFactory;
 import com.browseengine.bobo.facets.data.FacetDataCache;
+import com.browseengine.bobo.facets.data.FacetDataCacheSource;
 import com.browseengine.bobo.facets.data.MultiValueFacetDataCache;
 import com.browseengine.bobo.facets.data.TermListFactory;
 import com.browseengine.bobo.facets.filter.EmptyFilter;
@@ -29,7 +30,7 @@ import com.browseengine.bobo.facets.filter.MultiValueORFacetFilter;
 import com.browseengine.bobo.facets.filter.RandomAccessFilter;
 import com.browseengine.bobo.facets.filter.RandomAccessNotFilter;
 
-public class PathFacetHandler extends FacetHandler implements FacetHandlerFactory 
+public class PathFacetHandler extends FacetHandler implements FacetHandlerFactory,FacetDataCacheSource 
 {
 	private static final String DEFAULT_SEP = "/";
 	

@@ -104,9 +104,9 @@ public class BoboRequestHandler implements SolrRequestHandler {
 			BoboIndexReader reader = (BoboIndexReader)solrReader.getWrappedReader();
 			
 			if (reader instanceof BoboIndexReader){
-				BoboBrowser browser = new BoboBrowser(reader);
-			    
 			    try {
+	                BoboBrowser browser = new BoboBrowser(reader);
+	                
 					res=browser.browse(br);
 					 /*
 					if(HighlightingUtils.isHighlightingEnabled(req) && query != null) {
@@ -117,7 +117,7 @@ public class BoboRequestHandler implements SolrRequestHandler {
 					}
 					*/
 					
-				} catch (BrowseException e) {
+				} catch (Exception e) {
 					logger.error(e.getMessage(),e);
 					throw new SolrException(SolrException.ErrorCode.SERVER_ERROR,e.getMessage(),e);
 				}

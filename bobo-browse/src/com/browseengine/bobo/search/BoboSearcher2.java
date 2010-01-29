@@ -1,25 +1,53 @@
 package com.browseengine.bobo.search;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.HitCollector;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Weight;
+import org.apache.lucene.util.ReaderUtil;
 
 import com.browseengine.bobo.api.BoboIndexReader;
 import com.browseengine.bobo.docidset.RandomAccessDocIdSet;
 import com.browseengine.bobo.facets.FacetCountCollector;
 
-public class BoboSearcher2 extends BoboSearcher{
+public class BoboSearcher2 extends IndexSearcher{
+	protected List<FacetHitCollector> _facetCollectors;
+	protected IndexReader[] _subReaders;
+	protected int[] _docStarts;
+	
     public BoboSearcher2(BoboIndexReader reader)
     {
         super(reader);
+        _facetCollectors = new LinkedList<FacetHitCollector>();
+        List<IndexReader> readerList = new ArrayList<IndexReader>();
+        ReaderUtil.gatherSubReaders(readerList, reader);
+        _subReaders = (IndexReader[])readerList.toArray(new IndexReader[readerList.size()]);
+        _docStarts = new int[_subReaders.length];
+        int maxDoc = 0;
+        for (int i=0;i<_subReaders.length;++i){
+        	_docStarts[i]=maxDoc;
+        	maxDoc += _subReaders[i].maxDoc();
+        }
     }
+    
+    public void setFacetHitCollectorList(List<FacetHitCollector> facetHitCollectors)
+	{
+		if (facetHitCollectors != null)
+		{
+			_facetCollectors = facetHitCollectors;
+		}
+	}
 
-    private abstract static class FacetValidator
+    abstract static class FacetValidator
     {
       protected final FacetHitCollector[] _collectors;
       protected final FacetCountCollector[] _countCollectors;
@@ -61,24 +89,23 @@ public class BoboSearcher2 extends BoboSearcher{
           for(int i = 0; i < _numPostFilters; i++)
           {
             FacetHitCollector facetCollector = _collectors[i];
-            if(facetCollector._more)
+            int sid = facetCollector._doc;
+            if(sid!=DocIdSetIterator.NO_MORE_DOCS)
             {
-              int sid = facetCollector._doc;
               if(sid == docid) continue; // matched
               
               if(sid < docid)
               {
                 DocIdSetIterator iterator = facetCollector._postDocIDSetIterator;
-                if(iterator.skipTo(docid))
+                sid = iterator.advance(docid);
+                if(sid!=DocIdSetIterator.NO_MORE_DOCS)
                 {
-                  sid = iterator.doc();
                   facetCollector._doc = sid;
                   if(sid == docid) continue; // matched
                 }
                 else
                 {
-                  facetCollector._more = false;
-                  facetCollector._doc = Integer.MAX_VALUE;
+                  facetCollector._doc = DocIdSetIterator.NO_MORE_DOCS;
                   
                   // move this to front so that the call can find the failure faster
                   FacetHitCollector tmp = _collectors[0];
@@ -178,8 +205,7 @@ public class BoboSearcher2 extends BoboSearcher{
         {
           if (facetCollector._postDocIDSetIterator != null) 
           {
-            facetCollector._more = facetCollector._postDocIDSetIterator.next();
-            facetCollector._doc = (facetCollector._more ? facetCollector._postDocIDSetIterator.doc() : Integer.MAX_VALUE);
+        	facetCollector._doc = facetCollector._postDocIDSetIterator.nextDoc();
             collectors[i] = facetCollector;
             countCollectors[i]=facetCollector._facetCountCollector;
             i++;
@@ -205,75 +231,86 @@ public class BoboSearcher2 extends BoboSearcher{
     }
     
     @Override
-    public void search(Weight weight, Filter filter, HitCollector results)
+    public void search(Weight weight, Filter filter, Collector collector)
             throws IOException {
-        IndexReader reader=getIndexReader();
-        
-        Scorer scorer = weight.scorer(reader);
-        if (scorer == null)
-          return;
-
         final FacetValidator validator = createFacetValidator();
         int target = 0;
-        boolean more;
         
         if (filter == null)
         {
-          more = scorer.next();
-          while(more)
-          {
-            target = scorer.doc();
-            if(validator.validate(target))
-            {
-              results.collect(target, scorer.score());
-              more = scorer.next();
-            }
-            else
-            {
-              target = validator._nextTarget;
-              more = scorer.skipTo(target);
+          for (int i = 0; i < _subReaders.length; i++) { // search each subreader
+        	int start = _docStarts[i];
+            collector.setNextReader(_subReaders[i], start);
+            Scorer scorer = weight.scorer(_subReaders[i], !collector.acceptsDocsOutOfOrder(), true);
+            if (scorer != null) {
+            	collector.setScorer(scorer);
+            	target = scorer.nextDoc();
+                while(target!=DocIdSetIterator.NO_MORE_DOCS)
+                {
+                  if(validator.validate(target+start))
+                  {
+                	collector.collect(target);
+                    target = scorer.nextDoc();
+                  }
+                  else
+                  {
+                    target = validator._nextTarget;
+                    target = scorer.advance(target);
+                  }
+                }
             }
           }
           return;
         }
 
-        DocIdSetIterator filterDocIdIterator = filter.getDocIdSet(reader).iterator(); // CHECKME: use ConjunctionScorer here?
-        
-        if(!filterDocIdIterator.next()) return;
-        target = filterDocIdIterator.doc();
-        
-        int doc = -1;
-        while(true)
-        {
-          if(doc < target)
-          {
-            if(!scorer.skipTo(target)) break;
-            doc = scorer.doc();
-          }
-          
-          if(doc == target) // permitted by filter
-          {
-            if(validator.validate(doc))
-            {
-              results.collect(doc, scorer.score());
-              
-              if(!filterDocIdIterator.next()) break;
-              target = filterDocIdIterator.doc();
-              continue;
+        for (int i = 0; i < _subReaders.length; i++) {
+        	DocIdSet filterDocIdSet = filter.getDocIdSet(_subReaders[i]);
+        	if (filterDocIdSet == null) return;
+        	int start = _docStarts[i];
+        	collector.setNextReader(_subReaders[i], start);
+            Scorer scorer = weight.scorer(_subReaders[i], !collector.acceptsDocsOutOfOrder(), true);
+            if (scorer!=null){
+            	collector.setScorer(scorer);
+	        	DocIdSetIterator filterDocIdIterator = filterDocIdSet.iterator(); // CHECKME: use ConjunctionScorer here?
+	        	
+	        	target = filterDocIdIterator.nextDoc();
+	            if(target == DocIdSetIterator.NO_MORE_DOCS) return;
+	            
+	            int doc = -1;
+	            while(true)
+	            {
+	              if(doc < target)
+	              {
+	            	doc = scorer.advance(target);
+	                if(doc == DocIdSetIterator.NO_MORE_DOCS) break;
+	              }
+	              
+	              if(doc == target) // permitted by filter
+	              {
+	                if(validator.validate(doc+start))
+	                {
+	                  collector.collect(doc);
+	                  
+	                  target = filterDocIdIterator.nextDoc();
+	                  if(target == DocIdSetIterator.NO_MORE_DOCS) break;
+	                  continue;
+	                }
+	                else
+	                {
+	                  // skip to the next possible docid
+	                  target = validator._nextTarget;
+	                }
+	              }
+	              else // doc > target
+	              {
+	                target = doc;
+	              }
+	              
+	              target = filterDocIdIterator.advance(target);
+	              if(target == DocIdSetIterator.NO_MORE_DOCS) break;
+                }
             }
-            else
-            {
-              // skip to the next possible docid
-              target = validator._nextTarget;
-            }
-          }
-          else // doc > target
-          {
-            target = doc;
-          }
-          
-          if(!filterDocIdIterator.skipTo(target)) break;
-          target = filterDocIdIterator.doc();
         }
+        
     }
 }

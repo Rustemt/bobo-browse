@@ -48,18 +48,26 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Index;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Payload;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Explanation;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.ScoreDocComparator;
 import org.apache.lucene.search.SortComparatorSource;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.util.Version;
 
 import com.browseengine.bobo.api.BoboBrowser;
 import com.browseengine.bobo.api.BoboIndexReader;
@@ -140,7 +148,7 @@ public class BoboTestCase extends TestCase {
 	public static Field buildMetaField(String name,String val)
 	{
 	  Field f = new Field(name,val,Field.Store.NO,Index.NOT_ANALYZED_NO_NORMS);
-	  f.setOmitTf(true);
+	  f.setOmitTermFreqAndPositions(true);
 	  return f;
 	}
 	
@@ -407,7 +415,7 @@ public class BoboTestCase extends TestCase {
 		SimpleFacetHandler shapeHandler = new SimpleFacetHandler("shape");
 		colorHandler.setTermCountSize(TermCountSize.medium);
 		facetHandlers.add(new SimpleFacetHandler("shape"));
-		facetHandlers.add(new RangeFacetHandler("size", true));
+		facetHandlers.add(new RangeFacetHandler("size", Arrays.asList(new String[]{"[* TO 4]", "[5 TO 8]", "[9 TO *]"})));
 		String[] ranges = new String[]{"[000000 TO 000005]", "[000006 TO 000010]", "[000011 TO 000020]"};
 		facetHandlers.add(new RangeFacetHandler("numendorsers", new PredefinedTermListFactory(Integer.class, "000000"), Arrays.asList(ranges)));
 		
@@ -702,7 +710,7 @@ public class BoboTestCase extends TestCase {
 		});
 		
 		answer=new HashMap<String,List<BrowseFacet>>();
-		answer.put("path", Arrays.asList(new BrowseFacet[]{new BrowseFacet("a-e-f",1),new BrowseFacet("a-c-d",2)}));
+		answer.put("path", Arrays.asList(new BrowseFacet[]{new BrowseFacet("a-c-d",2),new BrowseFacet("a-e-f",1)}));
 		doTest(br,3,answer,null);
 	}
 	
@@ -840,6 +848,7 @@ public class BoboTestCase extends TestCase {
 	        doTest(result,req,numHits,choiceMap,ids);
 	        return result;
 	  	} catch (BrowseException e) {
+	  		e.printStackTrace();
 	  		fail(e.getMessage());
 	  	}
 	  	catch(IOException ioe){
@@ -1410,13 +1419,70 @@ public class BoboTestCase extends TestCase {
 		
 		HashMap<String,List<BrowseFacet>> answer=new HashMap<String,List<BrowseFacet>>();
 		answer.put("color",  Arrays.asList(new BrowseFacet[]{new BrowseFacet("green",1),new BrowseFacet("red",2)}));
-		answer.put("size", Arrays.asList(new BrowseFacet[]{new BrowseFacet("[4 TO 4]",1),new BrowseFacet("[7 TO 7]",1)}));
+		answer.put("size", Arrays.asList(new BrowseFacet[]{new BrowseFacet("[* TO 4]",1),new BrowseFacet("[5 TO 8]",1)}));
 		answer.put("shape", Arrays.asList(new BrowseFacet[]{new BrowseFacet("square",2)}));
 		answer.put("location", Arrays.asList(new BrowseFacet[]{new BrowseFacet("toy/lego/",1),new BrowseFacet("toy/lego/block",1)}));
 		answer.put("tag", Arrays.asList(new BrowseFacet[]{new BrowseFacet("rabbit",2),new BrowseFacet("animal",1),new BrowseFacet("dog",1),new BrowseFacet("humane",1),new BrowseFacet("pet",1)}));
 		doTest(br,2,answer,null);
 		
 	}
+	
+	public void testFastMatchAllDocs() throws Exception{
+		  RAMDirectory idxDir = new RAMDirectory();
+		  Document doc;
+		  Field f;
+		  IndexWriter writer = new IndexWriter(idxDir,new StandardAnalyzer(Version.LUCENE_CURRENT),MaxFieldLength.UNLIMITED);
+		  doc = new Document();
+		  f = new Field("id","1",Store.YES,Index.NOT_ANALYZED_NO_NORMS);
+		  doc.add(f);
+		  writer.addDocument(doc);
+		  doc = new Document();
+		  f = new Field("id","2",Store.YES,Index.NOT_ANALYZED_NO_NORMS);
+	      doc.add(f);
+	      writer.addDocument(doc);
+	      doc = new Document();
+	      f = new Field("id","3",Store.YES,Index.NOT_ANALYZED_NO_NORMS);
+	      doc.add(f);
+	      writer.addDocument(doc);
+	      writer.commit();
+	      
+	      writer.deleteDocuments(new Term("id","1"));
+	      writer.deleteDocuments(new Term("id","2"));
+	      writer.deleteDocuments(new Term("id","3"));
+	      writer.commit();
+	      
+	      BoboIndexReader reader = BoboIndexReader.getInstance(IndexReader.open(idxDir));
+	      IndexSearcher searcher = new IndexSearcher(reader);
+	      
+	      TopDocs topDocs = searcher.search(reader.getFastMatchAllDocsQuery(), 100);
+	      assertEquals(0, topDocs.totalHits);
+	      reader.close();
+	      
+	      doc = new Document();
+	      f = new Field("id","1",Store.YES,Index.NOT_ANALYZED_NO_NORMS);
+	      doc.add(f);
+	      writer.addDocument(doc);
+	      doc = new Document();
+	      f = new Field("id","2",Store.YES,Index.NOT_ANALYZED_NO_NORMS);
+	      doc.add(f);
+	      writer.addDocument(doc);
+	      doc = new Document();
+	      f = new Field("id","3",Store.YES,Index.NOT_ANALYZED_NO_NORMS);
+	      doc.add(f);
+	      writer.addDocument(doc);
+	      writer.commit();
+	      
+	      reader = BoboIndexReader.getInstance(IndexReader.open(idxDir));
+	      searcher = new IndexSearcher(reader);
+	      
+	      //Query q = new MatchAllDocsQuery();
+
+	      Query q = reader.getFastMatchAllDocsQuery();
+	      
+	      topDocs = searcher.search(q, 100);
+	      assertEquals(3, topDocs.totalHits);
+	      reader.close();
+		}
 	
 	/**
 	 * Tests the MultiBoboBrowser functionality by creating a BoboBrowser and 
@@ -1539,7 +1605,7 @@ public class BoboTestCase extends TestCase {
 						Integer size1 = (Integer)fieldValueAccessor.getRawValue(v1);
 						Integer size2 = (Integer)fieldValueAccessor.getRawValue(v2);
 						
-						int val = size1-size2;
+						int val = size2-size1;
 						if (val == 0){
 							val = counts[v1]-counts[v2];
 						}
@@ -1554,7 +1620,7 @@ public class BoboTestCase extends TestCase {
 					public int compare(BrowseFacet o1, BrowseFacet o2) {
 						int v1 = Integer.parseInt(o1.getValue());
 						int v2 = Integer.parseInt(o2.getValue());
-						int val = v1-v2;
+						int val = v2-v1;
 						if (val == 0){
 							val = o1.getHitCount()-o2.getHitCount();
 						}

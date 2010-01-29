@@ -166,7 +166,7 @@ public class FacetHandlerTest extends TestCase {
 	
 	public void testNegativeLoadTest() throws Exception
 	{
-IndexReader reader = IndexReader.open(_ramDir);
+		IndexReader reader = IndexReader.open(_ramDir);
 		
 		List<FacetHandler> list = new LinkedList<FacetHandler>();
 		HashSet<String> s1 = new HashSet<String>();

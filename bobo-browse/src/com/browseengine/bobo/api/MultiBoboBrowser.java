@@ -4,14 +4,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.search.HitCollector;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.MultiSearcher;
+import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.SortField;
 
@@ -26,6 +29,7 @@ public class MultiBoboBrowser extends MultiSearcher implements Browsable
 {
   private static Logger logger = Logger.getLogger(MultiBoboBrowser.class);
   
+  protected final Browsable[] _subBrowsers;
   /**
    * 
    * @param browsers
@@ -35,6 +39,7 @@ public class MultiBoboBrowser extends MultiSearcher implements Browsable
   public MultiBoboBrowser(Browsable[] browsers) throws IOException
   {
     super(browsers);
+    _subBrowsers = browsers;
   }
 
   /**
@@ -46,7 +51,7 @@ public class MultiBoboBrowser extends MultiSearcher implements Browsable
    *          HitCollector for the hits generated during a search
    *          
    */
-  public void browse(BrowseRequest req,final HitCollector hitCollector,Map<String, FacetAccessible> facetMap) throws BrowseException
+  public void browse(BrowseRequest req,final Collector hitCollector,Map<String, FacetAccessible> facetMap) throws BrowseException
   {
     Browsable[] browsers = getSubBrowsers();
     int[] starts = getStarts();
@@ -58,15 +63,25 @@ public class MultiBoboBrowser extends MultiSearcher implements Browsable
 	    for (int i = 0; i < browsers.length; i++)
 	    {
 	      final int start = starts[i];
+	        
+	       final Collector hc = new Collector() {
+	          public void setScorer(Scorer scorer) throws IOException {
+	        	  hitCollector.setScorer(scorer);
+	          }
+	          public void collect(int doc) throws IOException {
+	        	  hitCollector.collect(doc);
+	          }
+	          public void setNextReader(IndexReader reader, int docBase) throws IOException {
+	        	  hitCollector.setNextReader(reader, start + docBase);
+	          }
+	          public boolean acceptsDocsOutOfOrder() {
+	            return hitCollector.acceptsDocsOutOfOrder();
+	          }
+	       };
+	        
 	      try
 	      {
-		      browsers[i].browse(req, new HitCollector()
-		      {
-		        public void collect(int doc, float score)
-		        {
-		          hitCollector.collect(doc + start, score);
-		        }
-		      },facetColMap);
+		      browsers[i].browse(req,hc,facetColMap);
 	      }
 	      finally
 	      {
@@ -185,7 +200,7 @@ public class MultiBoboBrowser extends MultiSearcher implements Browsable
    */
   public Browsable[] getSubBrowsers()
   {
-    return (Browsable[])getSearchables();
+    return _subBrowsers;
   }
   
   
@@ -242,15 +257,26 @@ public class MultiBoboBrowser extends MultiSearcher implements Browsable
     return count;
   }
 
+  public Set<String> getFacetNames()
+  {
+    Set<String> names = new HashSet<String>();
+    Browsable[] subBrowsers = getSubBrowsers();
+    for (Browsable subBrowser : subBrowsers)
+    {
+      names.addAll(subBrowser.getFacetNames());
+    }
+    return names;
+  }
+  
   public FacetHandler getFacetHandler(String name)
   {
-	  Browsable[] subBrowsers = getSubBrowsers();
-	  for (Browsable subBrowser : subBrowsers)
-	  {
-		FacetHandler subHandler = subBrowser.getFacetHandler(name);
-		if (subHandler!=null) return subHandler;
-	  }
-	  return null;
+    Browsable[] subBrowsers = getSubBrowsers();
+    for (Browsable subBrowser : subBrowsers)
+    {
+      FacetHandler subHandler = subBrowser.getFacetHandler(name);
+      if (subHandler!=null) return subHandler;
+    }
+    return null;
   }
 	
   

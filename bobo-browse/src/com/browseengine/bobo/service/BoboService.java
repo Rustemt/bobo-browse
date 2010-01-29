@@ -38,9 +38,9 @@ public class BoboService{
 			browser = new BoboBrowser(_boboReader);
 			return browser.browse(req);
 		}
-		catch(BrowseException be)
+        catch(Exception e)
 		{
-			logger.error(be.getMessage(),be);
+			logger.error(e.getMessage(),e);
 			return new BrowseResult();
 		}
 		finally

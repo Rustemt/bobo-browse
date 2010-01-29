@@ -37,20 +37,20 @@ import org.apache.lucene.search.ScoreDocComparator;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.util.PriorityQueue;
 
-import com.browseengine.bobo.api.BoboBrowser;
+import com.browseengine.bobo.api.BoboSubBrowser;
 import com.browseengine.bobo.facets.FacetHandler;
 
 
 public class SortedHitQueue extends PriorityQueue {
 	private static final Logger logger = Logger.getLogger(SortedHitQueue.class);	
-	private BoboBrowser _boboBrowser;
+	private BoboSubBrowser _boboBrowser;
 		
 	/** Stores a comparator corresponding to each field being sorted by */
 	protected ScoreDocComparator[] comparators;
     Map<String,ScoreDocComparator> _comparatorMap;
     protected boolean[] _isReverse;
     
-	public SortedHitQueue(BoboBrowser boboBrowser,SortField[] sortFields,int size){
+	public SortedHitQueue(BoboSubBrowser boboBrowser,SortField[] sortFields,int size){
 	  _comparatorMap = new HashMap<String,ScoreDocComparator>();
 	  _boboBrowser=boboBrowser;
       final int n = sortFields.length;

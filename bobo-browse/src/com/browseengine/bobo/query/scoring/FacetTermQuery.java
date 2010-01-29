@@ -19,7 +19,7 @@ import com.browseengine.bobo.api.BoboIndexReader;
 import com.browseengine.bobo.api.BrowseSelection;
 import com.browseengine.bobo.facets.FacetHandler;
 import com.browseengine.bobo.facets.filter.RandomAccessFilter;
-import com.browseengine.bobo.query.FastMatchAllDocsQuery.FastMatchAllScorer;
+import com.browseengine.bobo.query.MatchAllDocIdSetIterator;
 
 public class FacetTermQuery extends Query {
 	/**
@@ -49,7 +49,7 @@ public class FacetTermQuery extends Query {
 	}
 	
 	@Override
-	protected Weight createWeight(Searcher searcher) throws IOException {
+	public Weight createWeight(Searcher searcher) throws IOException {
 		return new FacetTermWeight(searcher.getSimilarity());
 	}
 	
@@ -61,8 +61,12 @@ public class FacetTermQuery extends Query {
 		}
 	}
 
-	private class FacetTermWeight implements Weight{
-        Similarity _similarity;
+	private class FacetTermWeight extends Weight{
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		Similarity _similarity;
         public FacetTermWeight(Similarity sim) {
         	_similarity = sim;
 		}
@@ -97,7 +101,8 @@ public class FacetTermQuery extends Query {
 			
 		}
 
-		public Scorer scorer(IndexReader reader) throws IOException {
+		@Override
+		public Scorer scorer(IndexReader reader,boolean scoreDocsInOrder,boolean topScorer) throws IOException {
 			if (reader instanceof BoboIndexReader){
 			  BoboIndexReader boboReader = (BoboIndexReader)reader;
 			  FacetHandler fhandler = boboReader.getFacetHandler(FacetTermQuery.this._name);
@@ -111,7 +116,7 @@ public class FacetTermQuery extends Query {
 					 }
 				 }
 				 if (dociter==null){
-					 dociter = new FastMatchAllScorer(boboReader.maxDoc(),new int[0],1.0f);
+					 dociter = new MatchAllDocIdSetIterator(reader);
 				 }
 				 BoboDocScorer scorer = null;
 				 if (fhandler instanceof FacetScoreable){
@@ -154,22 +159,22 @@ public class FacetTermQuery extends Query {
 
 		@Override
 		public float score() throws IOException {
-			return _scorer==null ? 1.0f : _scorer.score(doc());
+			return _scorer==null ? 1.0f : _scorer.score(_docSetIter.docID());
 		}
 
 		@Override
-		public int doc() {
-			return _docSetIter.doc();
+		public int docID() {
+			return _docSetIter.docID();
 		}
 
 		@Override
-		public boolean next() throws IOException {
-			return _docSetIter.next();
+		public int nextDoc() throws IOException {
+			return _docSetIter.nextDoc();
 		}
 
 		@Override
-		public boolean skipTo(int target) throws IOException {
-			return _docSetIter.skipTo(target);
+		public int advance(int target) throws IOException {
+			return _docSetIter.advance(target);
 		}
 		
 	}

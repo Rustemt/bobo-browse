@@ -19,6 +19,7 @@ import com.browseengine.bobo.facets.FacetCountCollector;
 import com.browseengine.bobo.facets.FacetHandler;
 import com.browseengine.bobo.facets.FacetHandlerFactory;
 import com.browseengine.bobo.facets.data.FacetDataCache;
+import com.browseengine.bobo.facets.data.FacetDataCacheSource;
 import com.browseengine.bobo.facets.data.TermListFactory;
 import com.browseengine.bobo.facets.filter.EmptyFilter;
 import com.browseengine.bobo.facets.filter.FacetOrFilter;
@@ -27,7 +28,7 @@ import com.browseengine.bobo.facets.filter.RandomAccessAndFilter;
 import com.browseengine.bobo.facets.filter.RandomAccessFilter;
 import com.browseengine.bobo.facets.filter.RandomAccessNotFilter;
 
-public class RangeFacetHandler extends FacetHandler implements FacetHandlerFactory
+public class RangeFacetHandler extends FacetHandler implements FacetHandlerFactory,FacetDataCacheSource
 {
 	private static Logger logger = Logger.getLogger(RangeFacetHandler.class);
 	

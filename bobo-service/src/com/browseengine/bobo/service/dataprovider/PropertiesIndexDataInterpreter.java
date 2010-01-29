@@ -61,7 +61,7 @@ public class PropertiesIndexDataInterpreter implements ZoieIndexableInterpreter<
       
     }
 
-    public int getUID()
+    public long getUID()
     {
       return _prop.getID();
     }

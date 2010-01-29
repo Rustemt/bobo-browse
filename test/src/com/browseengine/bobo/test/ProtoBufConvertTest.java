@@ -11,14 +11,15 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.ConstantScoreRangeQuery;
 import org.apache.lucene.search.FuzzyQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.WildcardQuery;
+import org.apache.lucene.util.Version;
 
 import com.browseengine.bobo.api.BrowseRequest;
 import com.browseengine.bobo.protobuf.BrowseProtobufConverter;
@@ -68,8 +69,8 @@ public class ProtoBufConvertTest extends TestCase {
 	}
 
 	public void testRangeQuery() throws ParseException {
-		doConvert(new ConstantScoreRangeQuery("tags", "a", "x", false, false));
-		doConvert(new ConstantScoreRangeQuery("tags", "a", "x", true, true));
+		doConvert(new TermRangeQuery("tags", "a", "x", false, false));
+		doConvert(new TermRangeQuery("tags", "a", "x", true, true));
 	}
 
 	public void doConvert(Query query) throws ParseException {
@@ -80,7 +81,7 @@ public class ProtoBufConvertTest extends TestCase {
 		String reqString = TextFormat.printToString(req);
 		reqString = reqString.replace('\r', ' ').replace('\n', ' ');
 //		System.out.println(reqString);
-		Analyzer analyzer = new StandardAnalyzer();
+		Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
 		QueryParser _qparser = new QueryParser("", analyzer);
 //		System.out.println("msg to req");
 		BrowseRequest boboReqAfter = BrowseProtobufConverter.convert(req, _qparser);

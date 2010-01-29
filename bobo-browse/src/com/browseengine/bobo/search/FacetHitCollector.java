@@ -12,7 +12,6 @@ public final class FacetHitCollector{
 	public FacetCountCollector _facetCountCollector;
 	public DocIdSetIterator _postDocIDSetIterator;
 	public int _doc;
-	public boolean _more;
 	public FacetHandler facetHandler;
 	public RandomAccessDocIdSet _docidSet=null;
 }

@@ -65,22 +65,36 @@ public class CompactMultiValueFacetFilter extends RandomAccessFilter {
 		}
 		
 		@Override
-		public final int doc()
+		public final int docID()
 		{
 		  return _doc;
 		}
 
 		@Override
-        public final boolean next() throws IOException {
-          _doc = _orderArray.findBits(_bits, _doc + 1, _maxID);
-          return (_doc <= _maxID);
+        public final int nextDoc() throws IOException {
+		    while(_doc < _maxID) // not yet reached end
+            {
+                if ((_orderArray.get(++_doc) & _bits) != 0x0){
+                    return _doc;
+                }
+            }
+            return DocIdSetIterator.NO_MORE_DOCS;
         }
 
         @Override
-        public final boolean skipTo(int id) throws IOException {
-          if(id < _doc) id = _doc + 1;
-          _doc = _orderArray.findBits(_bits, id, _maxID);
-          return (_doc <= _maxID);
+        public final int advance(int id) throws IOException {
+          if (_doc < id)
+          {
+            _doc=id-1;
+          }
+          
+          while(_doc < _maxID) // not yet reached end
+          {
+            if ((_orderArray.get(++_doc) & _bits) != 0x0){
+              return _doc;
+            }
+          }
+          return DocIdSetIterator.NO_MORE_DOCS;
         }
 	}
 	
@@ -100,11 +114,11 @@ public class CompactMultiValueFacetFilter extends RandomAccessFilter {
 				{
 					return new CompactMultiValueFacetDocIdSetIterator(_dataCache,_index,_bits);
 				}
-        @Override
-        final public boolean get(int docId)
-        {
-          return (_orderArray.get(docId) & _bits) != 0x0;
-        }
+		        @Override
+		        final public boolean get(int docId)
+		        {
+		          return (_orderArray.get(docId) & _bits) != 0x0;
+		        }
 			};
 		}
 	}

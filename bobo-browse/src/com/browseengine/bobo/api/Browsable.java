@@ -2,9 +2,10 @@ package com.browseengine.bobo.api;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.Explanation;
-import org.apache.lucene.search.HitCollector;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Searchable;
 import org.apache.lucene.search.Similarity;
@@ -16,11 +17,13 @@ public interface Browsable extends Searchable
 {
 	
 	void browse(BrowseRequest req, 
-	            HitCollector hitCollector,
+	            Collector hitCollector,
 	            Map<String,FacetAccessible> facets) throws BrowseException;
 
 	BrowseResult browse(BrowseRequest req) throws BrowseException;
 
+	Set<String> getFacetNames();
+	
 	void setFacetHandler(FacetHandler facetHandler) throws IOException;
 
 	FacetHandler getFacetHandler(String name);

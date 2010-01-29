@@ -33,7 +33,7 @@ public class RandomAccessNotFilter extends RandomAccessFilter
         return !innerDocIdSet.get(docId);
       }
       @Override
-      public DocIdSetIterator iterator()
+      public DocIdSetIterator iterator() throws IOException
       {
         return notInnerDocIdSet.iterator();
       }

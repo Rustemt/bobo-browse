@@ -29,7 +29,7 @@ public class BoboIndexReaderDecorator implements IndexReaderDecorator<BoboIndexR
 		this(null);
 	}
 	
-	public BoboIndexReader decorate(ZoieIndexReader zoieReader) throws IOException {
+	public BoboIndexReader decorate(ZoieIndexReader<BoboIndexReader> zoieReader) throws IOException {
 	    if (zoieReader != null)
 	    {
     		Thread.currentThread().setContextClassLoader(_classLoader);
@@ -40,16 +40,22 @@ public class BoboIndexReaderDecorator implements IndexReaderDecorator<BoboIndexR
     	      {
     	        handerList.add(factory.newInstance());
     	      }
-    	      return BoboIndexReader.getInstance(zoieReader,handerList);
+    	      return BoboIndexReader.getInstanceAsSubReader(zoieReader,handerList);
     		}
     		else
     		{
-    		   return BoboIndexReader.getInstance(zoieReader);
+    		  return BoboIndexReader.getInstanceAsSubReader(zoieReader);
     		}
 	    }
 	    else
 	    {
 	      return null;
 	    }
+	}
+
+	public BoboIndexReader redecorate(BoboIndexReader reader, ZoieIndexReader<BoboIndexReader> newReader)
+			throws IOException {
+		reader.rewrap(newReader);
+		return reader;
 	}
 }

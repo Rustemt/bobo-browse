@@ -7,6 +7,8 @@ import java.util.Comparator;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.SortField;
 
 import com.browseengine.bobo.api.Browsable;
@@ -26,6 +28,8 @@ public class MultiTopDocsSortedHitCollector extends TopDocsSortedHitCollector
   private final int _offset;
   private final int _count;
   private final SortField[] _sort;
+  private Scorer _scorer;
+  private int _docBase;
   
   public MultiTopDocsSortedHitCollector(MultiBoboBrowser multiBrowser,SortField[] sort, int offset, int count,boolean fetchStoredFields)
   {
@@ -41,14 +45,17 @@ public class MultiTopDocsSortedHitCollector extends TopDocsSortedHitCollector
     }
     _starts = _multiBrowser.getStarts();
     _totalCount = 0; 
+    _docBase = 0;
   }
 
   @Override
-  public void collect(int doc, float score)
+  public void collect(int doc) throws IOException
   {
-    int mapped = _multiBrowser.subDoc(doc);
-    int index = _multiBrowser.subSearcher(doc);
-    _subCollectors[index].collect(mapped, score);
+	int docid = doc+_docBase;
+    int mapped = _multiBrowser.subDoc(docid);
+    int index = _multiBrowser.subSearcher(docid);
+    _subCollectors[index].setScorer(_scorer);
+    _subCollectors[index].collect(mapped);
     _totalCount++;
   }
 
@@ -93,4 +100,18 @@ public class MultiTopDocsSortedHitCollector extends TopDocsSortedHitCollector
     return _totalCount;
   }
 
+  @Override
+  public boolean acceptsDocsOutOfOrder() {
+	return false;
+  }
+
+  @Override
+  public void setNextReader(IndexReader indexReader, int docBase) throws IOException {
+	  _docBase = docBase;
+  }
+
+  @Override
+  public void setScorer(Scorer scorer) throws IOException {
+	  _scorer = scorer;
+  }
 }

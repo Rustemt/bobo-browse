@@ -29,6 +29,7 @@ import com.browseengine.bobo.facets.filter.RandomAccessAndFilter;
 import com.browseengine.bobo.facets.filter.RandomAccessFilter;
 import com.browseengine.bobo.facets.filter.RandomAccessNotFilter;
 import com.browseengine.bobo.facets.filter.RandomAccessOrFilter;
+import com.browseengine.bobo.util.BoundedPriorityQueue;
 
 /**
  * FacetHandler definition
@@ -203,22 +204,55 @@ public abstract class FacetHandler implements Cloneable
 				}
 			}
 			
-			List<BrowseFacet> list = new LinkedList<BrowseFacet>(facetMap.values());
+            int cnt = 0;
+            int maxCnt = _fspec.getMaxCount();
+            if(maxCnt <= 0) maxCnt = Integer.MAX_VALUE;
+            int minHits = _fspec.getMinHitCount();
+            List<BrowseFacet> list = new LinkedList<BrowseFacet>();
 			
-			if (FacetSortSpec.OrderHitsDesc.equals(_fspec.getOrderBy()))
+			if (FacetSortSpec.OrderValueAsc.equals(_fspec.getOrderBy()))
 			{
-				Collections.sort(list, new Comparator<BrowseFacet>(){
-
-					public int compare(BrowseFacet f1, BrowseFacet f2) {
-						int val=f2.getHitCount() - f1.getHitCount();
-						if (val==0)
-						{
-							val=-(f1.getValue().compareTo(f2.getValue()));
-						}
-						return val;
-					}
-					
-				});
+			  for(BrowseFacet facet : facetMap.values())
+			  {
+			    if(facet.getHitCount() >= minHits)
+			    {
+			      list.add(facet);
+			      if(++cnt >= maxCnt) break;			      
+			    }
+			  }
+			}
+			else
+			{
+			  Comparator<BrowseFacet> comparator;
+			  if (FacetSortSpec.OrderHitsDesc.equals(_fspec.getOrderBy()))
+			  {
+			    comparator = new Comparator<BrowseFacet>()
+			    {
+			      public int compare(BrowseFacet f1, BrowseFacet f2)
+			      {
+			        int val=f2.getHitCount() - f1.getHitCount();
+			        if (val==0)
+			        {
+			          val = (f1.getValue().compareTo(f2.getValue()));
+			        }
+			        return val;
+			      }
+                };
+			  }
+			  else // FacetSortSpec.OrderByCustom.equals(_fspec.getOrderBy()
+			  {
+			    comparator = _fspec.getCustomComparatorFactory().newComparator();
+			  }
+			  ArrayList<BrowseFacet> facets = new ArrayList<BrowseFacet>(facetMap.values());
+			  Collections.sort(facets, comparator);
+			  for(BrowseFacet facet : facets)
+			  {
+			    if(facet.getHitCount() >= minHits)
+			    {
+			      list.add(facet);
+			      if(++cnt >= maxCnt) break;                  
+			    }
+			  }
 			}
 			return list;
 		}

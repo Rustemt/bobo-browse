@@ -13,16 +13,16 @@ public class PropertiesData implements Serializable
   
   private boolean _skip;
   private final HashMap<String,String> _data;
-  private final int _id;
+  private final long _id;
 
-  public PropertiesData(HashMap<String,String> data,int id)
+  public PropertiesData(HashMap<String,String> data,long id)
   {
     _data = data;
     _id = id;
     _skip = false;
   }
   
-  public int getID()
+  public long getID()
   {
     return _id;
   }

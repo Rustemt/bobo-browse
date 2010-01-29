@@ -15,6 +15,7 @@ import com.browseengine.bobo.facets.FacetCountCollector;
 import com.browseengine.bobo.facets.FacetHandler;
 import com.browseengine.bobo.facets.FacetHandlerFactory;
 import com.browseengine.bobo.facets.data.FacetDataCache;
+import com.browseengine.bobo.facets.data.FacetDataCacheSource;
 import com.browseengine.bobo.facets.data.TermListFactory;
 import com.browseengine.bobo.facets.filter.EmptyFilter;
 import com.browseengine.bobo.facets.filter.FacetFilter;
@@ -25,7 +26,7 @@ import com.browseengine.bobo.query.scoring.BoboDocScorer;
 import com.browseengine.bobo.query.scoring.FacetScoreable;
 import com.browseengine.bobo.query.scoring.FacetTermScoringFunctionFactory;
 
-public class SimpleFacetHandler extends FacetHandler implements FacetHandlerFactory,FacetScoreable
+public class SimpleFacetHandler extends FacetHandler implements FacetHandlerFactory,FacetScoreable,FacetDataCacheSource
 {
 	private static Logger logger = Logger.getLogger(SimpleFacetHandler.class);
 	private FacetDataCache _dataCache;
