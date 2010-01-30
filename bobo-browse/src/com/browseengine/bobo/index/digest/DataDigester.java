@@ -55,7 +55,7 @@ public abstract class DataDigester {
 			if (values!=null){
 				doc.removeFields(fields[i]);
 				for (int k=0;k<values.length;++k){
-					doc.add(new Field(fields[i], values[i],Store.NO, Index.UN_TOKENIZED));
+					doc.add(new Field(fields[i], values[i],Store.NO, Index.NOT_ANALYZED));
 					tokenBuffer.append(' ').append(values[i]);
 				}
 			}

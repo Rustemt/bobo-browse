@@ -25,22 +25,14 @@
 
 package com.browseengine.bobo.impl;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDocComparator;
-import org.apache.lucene.search.SortComparatorSource;
 import org.apache.lucene.search.SortField;
-
-import com.browseengine.bobo.api.BoboIndexReader;
-import com.browseengine.bobo.facets.FacetHandler;
+import org.apache.lucene.util.Version;
 
 public class QueryProducer{
 	private static Logger logger=Logger.getLogger(QueryProducer.class);
@@ -51,63 +43,63 @@ public class QueryProducer{
 			return null;
 		}
 		else{
-			Analyzer analyzer=new StandardAnalyzer();
+			Analyzer analyzer=new StandardAnalyzer(Version.LUCENE_CURRENT);
 			if (defaultField==null) defaultField="contents";
-			return new QueryParser(defaultField, analyzer).parse(queryString);
+			return new QueryParser(Version.LUCENE_CURRENT,defaultField, analyzer).parse(queryString);
 		}
 	}
 
 	final static SortField[] DEFAULT_SORT=new SortField[]{SortField.FIELD_SCORE};
 	
-	public static SortField[] convertSort(SortField[] sortSpec,BoboIndexReader idxReader){
-		 SortField[] retVal=DEFAULT_SORT;
-		if (sortSpec!=null && sortSpec.length>0){
-			ArrayList<SortField> sortList=new ArrayList<SortField>(sortSpec.length+1);
-			boolean relevanceSortAdded=false;
-			for (int i=0;i<sortSpec.length;++i){
-			    if (SortField.FIELD_DOC.equals(sortSpec[i])){
-			      sortList.add(SortField.FIELD_DOC);
-			    }
-			    else if (SortField.FIELD_SCORE.equals(sortSpec[i])){
-			      sortList.add(SortField.FIELD_SCORE);
-			      relevanceSortAdded=true;
-			    }
-			    else{
-    			    String fieldname=sortSpec[i].getField();
-    			    if (fieldname!=null){
-    			      SortField sf=null;
-    			      final FacetHandler facetHandler=idxReader.getFacetHandler(fieldname);
-    			      if (facetHandler!=null){
-    			    	  sf=new SortField(fieldname.toLowerCase(),new SortComparatorSource(){
-
-							/**
-							 * 
-							 */
-							private static final long serialVersionUID = 1L;
-
-							public ScoreDocComparator newComparator(
-									IndexReader reader, String fieldname)
-									throws IOException {
-								return facetHandler.getScoreDocComparator();
-							}
-    			    		  
-    			    	  },sortSpec[i].getReverse());
-    			      }
-    			      else{
-    			    	  sf=sortSpec[i];
-    			      }
-    			      sortList.add(sf);
-    			    }
-			    }
-			}
-			if (!relevanceSortAdded){
-			  sortList.add(SortField.FIELD_SCORE);
-			}
-			retVal=sortList.toArray(new SortField[sortList.size()]);		
-		}
-		return retVal;
-	}
-	
+//	public static SortField[] convertSort(SortField[] sortSpec,BoboIndexReader idxReader){
+//		 SortField[] retVal=DEFAULT_SORT;
+//		if (sortSpec!=null && sortSpec.length>0){
+//			ArrayList<SortField> sortList=new ArrayList<SortField>(sortSpec.length+1);
+//			boolean relevanceSortAdded=false;
+//			for (int i=0;i<sortSpec.length;++i){
+//			    if (SortField.FIELD_DOC.equals(sortSpec[i])){
+//			      sortList.add(SortField.FIELD_DOC);
+//			    }
+//			    else if (SortField.FIELD_SCORE.equals(sortSpec[i])){
+//			      sortList.add(SortField.FIELD_SCORE);
+//			      relevanceSortAdded=true;
+//			    }
+//			    else{
+//    			    String fieldname=sortSpec[i].getField();
+//    			    if (fieldname!=null){
+//    			      SortField sf=null;
+//    			      final FacetHandler facetHandler=idxReader.getFacetHandler(fieldname);
+//    			      if (facetHandler!=null){
+//    			    	  sf=new SortField(fieldname.toLowerCase(),new SortComparatorSource(){
+//
+//							/**
+//							 * 
+//							 */
+//							private static final long serialVersionUID = 1L;
+//
+//							public ScoreDocComparator newComparator(
+//									IndexReader reader, String fieldname)
+//									throws IOException {
+//								return facetHandler.getScoreDocComparator();
+//							}
+//    			    		  
+//    			    	  },sortSpec[i].getReverse());
+//    			      }
+//    			      else{
+//    			    	  sf=sortSpec[i];
+//    			      }
+//    			      sortList.add(sf);
+//    			    }
+//			    }
+//			}
+//			if (!relevanceSortAdded){
+//			  sortList.add(SortField.FIELD_SCORE);
+//			}
+//			retVal=sortList.toArray(new SortField[sortList.size()]);		
+//		}
+//		return retVal;
+//	}
+//	
 //	public static DocIdSet buildBitSet( BrowseSelection[] selections,BoboIndexReader reader) throws IOException{
 //		if (selections==null || selections.length == 0) return null;
 //		DocIdSet finalBits=null;

@@ -5,16 +5,12 @@
 	    <property name="resource" value="${bobo.root}/resource"/>
 
 		<property name="src" value="src"/>
-    	<property name="perf-lib" value="lib"/>
         <property name="build" value="build"/>
         <property name="conf" value="conf"/>
 	  
 		
         <path id="project.class.path">
         	<fileset dir="${lib.master}">
-                <include name="*.jar"/>
-			</fileset>
-        	<fileset dir="${perf-lib}">
                 <include name="*.jar"/>
 			</fileset>
 			<fileset dir="${dist}">
@@ -46,9 +42,6 @@
         			<fileset dir="${dist}">
 				      <include name="**/*.jar"/>
 				    </fileset>
-        			<fileset dir="${perf-lib}">
-			          <include name="**/*.jar"/>
-			        </fileset>
         			<pathelement location="${build}"/>
         			<pathelement location="${resource}"/>
         		</classpath>
@@ -60,4 +53,23 @@
 				-->
         	</java>
         </target>
+	
+	   <target name="fetch-perf" depends="compile">
+	        	<java fork="true" classname="com.browseengine.bobo.perf.DocumentFetchPerf" failonerror="true" maxmemory="5000m">
+	        		<classpath>
+	        			<fileset dir="${lib.master}">
+					      <include name="**/*.jar"/>
+					    </fileset>
+	        			<fileset dir="${dist}">
+					      <include name="**/*.jar"/>
+					    </fileset>
+	        			<pathelement location="${build}"/>
+	        			<pathelement location="${resource}"/>
+	        		</classpath>
+	        		<arg value="${conf}/bobo-perf.properties" />
+					<jvmarg value="-server" />
+	        		<jvmarg value="-d64" />
+				  <jvmarg value="-agentlib:yjpagent" />
+				</java>
+	        </target>
 </project>

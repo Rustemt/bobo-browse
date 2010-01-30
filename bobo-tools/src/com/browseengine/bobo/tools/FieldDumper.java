@@ -61,7 +61,7 @@ public class FieldDumper
    */
   public static void main(String[] args) throws Exception
   {
-    Directory idxDir = FSDirectory.getDirectory(new File("/Users/jwang/proj/bobo-trunk/cardata/cartag"));
+    Directory idxDir = FSDirectory.open(new File("/Users/jwang/proj/bobo-trunk/cardata/cartag"));
     File outDir = new File("/Users/jwang/proj/bobo-trunk/cardata");
     FieldDumper dumper = new FieldDumper(idxDir,outDir);
     dumper.doit();

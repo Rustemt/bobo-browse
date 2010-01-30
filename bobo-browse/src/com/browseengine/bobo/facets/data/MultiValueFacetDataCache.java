@@ -14,10 +14,12 @@ import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.index.TermPositions;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.ScoreDocComparator;
-import org.apache.lucene.search.SortField;
 
+import com.browseengine.bobo.api.BoboIndexReader;
 import com.browseengine.bobo.api.BoboIndexReader.WorkArea;
+import com.browseengine.bobo.facets.impl.MultiValueFacetHandler;
+import com.browseengine.bobo.sort.DocComparator;
+import com.browseengine.bobo.sort.DocComparatorSource;
 import com.browseengine.bobo.util.BigIntBuffer;
 import com.browseengine.bobo.util.BigNestedIntArray;
 import com.browseengine.bobo.util.StringArrayComparator;
@@ -377,28 +379,33 @@ public class MultiValueFacetDataCache extends FacetDataCache
               ((bytes[1] & 0xFF) <<  8) |  (bytes[0] & 0xFF);
     }
   }
-  
-    public ScoreDocComparator getScoreDocComparator()
-	{
-		return new MultiFacetScoreDocComparator(this);
-	}
     
-	public final static class MultiFacetScoreDocComparator implements ScoreDocComparator{
-		private MultiValueFacetDataCache _dataCache;
-		public MultiFacetScoreDocComparator(MultiValueFacetDataCache dataCache){
-			_dataCache=dataCache;
+	public final static class MultiFacetDocComparatorSource extends DocComparatorSource{
+		private MultiValueFacetHandler _facetHandler;
+		public MultiFacetDocComparatorSource(MultiValueFacetHandler facetHandler){
+			_facetHandler = facetHandler;
 		}
-		public final int compare(ScoreDoc i, ScoreDoc j) {
-			return _dataCache._nestedArray.compare(i.doc, j.doc);
-		}
+		
+		@Override
+		public DocComparator getComparator(final IndexReader reader, int docbase)
+				throws IOException {
+			if (!(reader instanceof BoboIndexReader)) throw new IllegalStateException("reader must be instance of "+BoboIndexReader.class);
+			BoboIndexReader boboReader = (BoboIndexReader)reader;
+			final MultiValueFacetDataCache dataCache = _facetHandler.getFacetData(boboReader);
+			return new DocComparator(){
+				
+				@Override
+				public int compare(ScoreDoc doc1, ScoreDoc doc2) {
+					return dataCache._nestedArray.compare(doc1.doc, doc2.doc);
+				}
 
-		public final int sortType() {
-			return SortField.CUSTOM;
-		}
-
-		public final Comparable sortValue(ScoreDoc i) {
-          String[] vals = _dataCache._nestedArray.getTranslatedData(i.doc, _dataCache.valArray);
-          return new StringArrayComparator(vals);
+				@Override
+				public Comparable value(ScoreDoc doc) {
+					String[] vals = dataCache._nestedArray.getTranslatedData(doc.doc, dataCache.valArray);
+			          return new StringArrayComparator(vals);
+				}
+				
+			};
 		}
 	}
 }

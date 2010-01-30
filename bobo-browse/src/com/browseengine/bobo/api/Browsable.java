@@ -12,6 +12,7 @@ import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.SortField;
 
 import com.browseengine.bobo.facets.FacetHandler;
+import com.browseengine.bobo.sort.SortCollector;
 
 public interface Browsable extends Searchable
 {
@@ -24,9 +25,9 @@ public interface Browsable extends Searchable
 
 	Set<String> getFacetNames();
 	
-	void setFacetHandler(FacetHandler facetHandler) throws IOException;
+	void setFacetHandler(FacetHandler<?> facetHandler) throws IOException;
 
-	FacetHandler getFacetHandler(String name);
+	FacetHandler<?> getFacetHandler(String name);
 	
 	Similarity getSimilarity();
 	
@@ -38,7 +39,7 @@ public interface Browsable extends Searchable
 	
 	int numDocs();
 	
-	Explanation explain(Query q, int docid) throws IOException;
+	SortCollector getSortCollector(SortField[] sort,Query q,int offset,int count,boolean fetchStoredFields,boolean forceScoring);
 	
-	TopDocsSortedHitCollector getSortedHitCollector(SortField[] sort,int offset,int count,boolean fetchStoredFields);
+	Explanation explain(Query q, int docid) throws IOException;
 }

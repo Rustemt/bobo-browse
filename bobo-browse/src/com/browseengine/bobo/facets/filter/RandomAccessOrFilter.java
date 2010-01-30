@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.DocIdSetIterator;
 
+import com.browseengine.bobo.api.BoboIndexReader;
 import com.browseengine.bobo.docidset.RandomAccessDocIdSet;
 import com.kamikaze.docidset.impl.OrDocIdSet;
 
@@ -29,7 +29,7 @@ public class RandomAccessOrFilter extends RandomAccessFilter
   }
   
   @Override
-  public RandomAccessDocIdSet getRandomAccessDocIdSet(IndexReader reader) throws IOException
+  public RandomAccessDocIdSet getRandomAccessDocIdSet(BoboIndexReader reader) throws IOException
   {
     if(_filters.size() == 1)
     {

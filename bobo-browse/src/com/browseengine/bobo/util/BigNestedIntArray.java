@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import org.apache.lucene.util.OpenBitSet;
+import org.apache.lucene.util.BitVector;
 
 import com.browseengine.bobo.facets.data.TermValueList;
 import com.browseengine.bobo.query.scoring.FacetTermScoringFunction;
@@ -588,7 +588,7 @@ public final class BigNestedIntArray
     return false;
   }
   
-  public final boolean contains(int id, OpenBitSet values)
+  public final boolean contains(int id, BitVector values)
   {
     final int[] page = _list[id >> PAGEID_SHIFT];
     if(page == null) return false;
@@ -596,7 +596,7 @@ public final class BigNestedIntArray
     final int val = page[id & SLOTID_MASK];
     if (val >= 0)
     {
-      return (values.fastGet(val));
+      return (values.get(val));
     }
     else if(val != MISSING)
     {
@@ -604,7 +604,7 @@ public final class BigNestedIntArray
       int end = idx + (val & COUNT_MASK);
       while(idx < end)          
       {
-        if(values.fastGet(page[idx++])) return true;  
+        if(values.get(page[idx++])) return true;  
       }
     }
     return false;

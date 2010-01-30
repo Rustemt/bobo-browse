@@ -64,7 +64,7 @@ public class BrowseServiceImpl implements BrowseService {
 	}
 	
 	private  BoboIndexReader newIndexReader() throws IOException {
-        Directory idxDir=FSDirectory.getDirectory(_idxDir);
+        Directory idxDir=FSDirectory.open(_idxDir);
         return newIndexReader(idxDir);
 	}
 	

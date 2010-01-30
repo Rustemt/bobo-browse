@@ -251,10 +251,7 @@ public class MakeUITask extends Task {
 
 					out.write("var "+name+"OutputSpec=new OutputSpec();\n");
 					
-					if (!((RangeFacetHandler)plugin).isAutoRange())	
-					{
-						out.write(name+"OutputSpec.expandSelection=true;\n");
-					}
+					out.write(name+"OutputSpec.expandSelection=true;\n");
 					out.write(name+"OutputSpec.max=5;\n");
 					out.write("request.ospecs[\""+name+"\"]="+name+"OutputSpec;\n");
 				}

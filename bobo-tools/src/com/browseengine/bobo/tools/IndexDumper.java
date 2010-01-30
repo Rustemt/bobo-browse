@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.store.FSDirectory;
 
 import com.browseengine.bobo.api.BoboIndexReader;
 import com.browseengine.bobo.facets.FacetHandler;
@@ -17,7 +18,7 @@ public class IndexDumper {
 	private int curr_docid=0;
 	private int maxdoc;
 	public IndexDumper(File idxDir) throws IOException{
-		IndexReader idxReader=IndexReader.open(idxDir);
+		IndexReader idxReader=IndexReader.open(FSDirectory.open(idxDir),true);
 		if (idxReader!=null){
 			try{
 				_reader=BoboIndexReader.getInstance(idxReader);
@@ -91,7 +92,7 @@ public class IndexDumper {
 				for (String field : fields){
 					FacetHandler facetHandler = idxReader.getFacetHandler(field);
 					if (facetHandler!=null){
-						String[] f=facetHandler.getFieldValues(k);
+						String[] f=facetHandler.getFieldValues(idxReader,k);
 						StringBuilder buffer=new StringBuilder();
 						buffer.append(field).append(':');
 						for (int l=0;l<f.length;++l){

@@ -6,17 +6,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.lucene.search.ScoreDocComparator;
-
 import com.browseengine.bobo.api.BoboIndexReader;
 import com.browseengine.bobo.api.BrowseSelection;
 import com.browseengine.bobo.api.FacetSpec;
 import com.browseengine.bobo.facets.FacetCountCollector;
+import com.browseengine.bobo.facets.FacetCountCollectorSource;
 import com.browseengine.bobo.facets.FacetHandler;
 import com.browseengine.bobo.facets.FacetHandlerFactory;
+import com.browseengine.bobo.facets.FacetHandler.FacetDataNone;
+import com.browseengine.bobo.facets.data.FacetDataCache;
 import com.browseengine.bobo.facets.filter.RandomAccessFilter;
+import com.browseengine.bobo.sort.DocComparatorSource;
 
-public class FilteredRangeFacetHandler extends FacetHandler implements FacetHandlerFactory {
+public class FilteredRangeFacetHandler extends FacetHandler<FacetDataNone> implements FacetHandlerFactory<FilteredRangeFacetHandler> {
     private final List<String> _predefinedRanges;
     private final String _inner;
     private RangeFacetHandler _innerHandler;
@@ -48,38 +50,47 @@ public class FilteredRangeFacetHandler extends FacetHandler implements FacetHand
 	}
 
 	@Override
-	public FacetCountCollector getFacetCountCollector(BrowseSelection sel,
-			FacetSpec fspec) {
-		return new RangeFacetCountCollector(_name, _innerHandler.getDataCache(), fspec, _predefinedRanges, false);
+	public FacetCountCollectorSource getFacetCountCollectorSource(final BrowseSelection sel,final FacetSpec fspec) {
+		return new FacetCountCollectorSource() {
+			
+			@Override
+			public FacetCountCollector getFacetCountCollector(BoboIndexReader reader,
+					int docBase) {
+				FacetDataCache dataCache = _innerHandler.getFacetData(reader);
+				return new RangeFacetCountCollector(_name, dataCache,docBase, fspec, _predefinedRanges);
+			}
+		};
+		
 	}
 
 	@Override
-	public String[] getFieldValues(int id) {
-		return _innerHandler.getFieldValues(id);
+	public String[] getFieldValues(BoboIndexReader reader,int id) {
+		return _innerHandler.getFieldValues(reader, id);
 	}
 	
 	@Override
-	public Object[] getRawFieldValues(int id){
-		return _innerHandler.getRawFieldValues(id);
+	public Object[] getRawFieldValues(BoboIndexReader reader,int id){
+		return _innerHandler.getRawFieldValues(reader,id);
 	}
 
 	@Override
-	public ScoreDocComparator getScoreDocComparator() {
-		return _innerHandler.getScoreDocComparator();
+	public DocComparatorSource getDocComparatorSource() {
+		return _innerHandler.getDocComparatorSource();
 	}
 
 	@Override
-	public void load(BoboIndexReader reader) throws IOException {
-		FacetHandler handler = reader.getFacetHandler(_inner);
+	public FacetDataNone load(BoboIndexReader reader) throws IOException {
+		FacetHandler<?> handler = reader.getFacetHandler(_inner);
 		if (handler instanceof RangeFacetHandler){
 			_innerHandler = (RangeFacetHandler)handler;
+			return FacetDataNone.instance;
 		}
 		else{
 			throw new IOException("inner handler is not instance of "+RangeFacetHandler.class);
 		}
 	}
 
-	public FacetHandler newInstance() {
+	public FilteredRangeFacetHandler newInstance() {
 		return new FilteredRangeFacetHandler(_name,_inner, _predefinedRanges);
 	}
 }

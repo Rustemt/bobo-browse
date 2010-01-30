@@ -41,7 +41,7 @@ public class DocIDPriorityQueue {
   }
 
   private final int compare(ScoreDoc doc1, ScoreDoc doc2) {
-    final int cmp = comparator.compare(doc1, doc2);
+    final int cmp = -comparator.compare(doc1, doc2);
     if (cmp != 0) {
       return cmp;
     } else {

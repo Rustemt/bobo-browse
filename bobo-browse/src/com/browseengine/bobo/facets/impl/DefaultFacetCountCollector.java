@@ -20,19 +20,22 @@ public abstract class DefaultFacetCountCollector implements FacetCountCollector
 {
   protected final FacetSpec _ospec;
   protected int[] _count;
-  protected final FacetDataCache _dataCache;
+  protected FacetDataCache _dataCache;
   private final String _name;
   protected final BrowseSelection _sel;
   protected final BigSegmentedArray _array;
+  private int _docBase;
   
-  public DefaultFacetCountCollector(BrowseSelection sel,FacetDataCache dataCache,String name,FacetSpec ospec)
+  public DefaultFacetCountCollector(String name,FacetDataCache dataCache,int docBase,
+		  						    BrowseSelection sel,FacetSpec ospec)
   {
       _sel = sel;
       _ospec = ospec;
       _name = name;
-      _dataCache = dataCache;
-      _count = new int[_dataCache.freqs.length];
+	  _dataCache=dataCache;
+	  _count = new int[_dataCache.freqs.length];
       _array = _dataCache.orderArray;
+	  _docBase = docBase;
   }
   
   public String getName()

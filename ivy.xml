@@ -12,6 +12,8 @@
         <dependency org="commons-logging" name="commons-logging" rev="1.1" conf="master"/>
         <dependency org="commons-httpclient" name="commons-httpclient" rev="3.1" conf="master"/>
         <dependency org="commons-collections" name="commons-collections" rev="3.2.1" conf="master"/>
+        <dependency org="commons-configuration" name="commons-configuration" rev="1.6" conf="master"/>
+        <dependency org="commons-lang" name="commons-lang" rev="2.4" conf="master"/>
         <dependency org="commons-cli" name="commons-cli" rev="1.2" conf="master"/>
         <dependency org="commons-digester" name="commons-digester" rev="2.0" conf="master"/>
         <dependency org="xml-apis" name="xml-apis" rev="2.0.2" conf="master"/>
@@ -25,7 +27,7 @@
         <dependency org="junit" name="junit" rev="4.5" conf="test->master"/>
         <dependency org="log4j" name="log4j" rev="1.2.15" conf="master"/>
         <dependency org="org.apache.lucene" name="lucene-highlighter" rev="2.3.0" conf="master"/>
-        <dependency org="org.apache.lucene" name="lucene-core" rev="2.9.0" conf="master"/>
+        <dependency org="org.apache.lucene" name="lucene-core" rev="2.9.1" conf="master"/>
         <dependency org="javax.servlet" name="servlet-api" rev="2.5" conf="master"/>
         <dependency org="org.springframework" name="spring-webmvc" rev="2.5.5" conf="master"/>
         <dependency org="org.springframework" name="spring" rev="2.5.5" conf="master"/>

@@ -82,7 +82,7 @@ public class ProtoBufConvertTest extends TestCase {
 		reqString = reqString.replace('\r', ' ').replace('\n', ' ');
 //		System.out.println(reqString);
 		Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
-		QueryParser _qparser = new QueryParser("", analyzer);
+		QueryParser _qparser = new QueryParser(Version.LUCENE_CURRENT,"", analyzer);
 //		System.out.println("msg to req");
 		BrowseRequest boboReqAfter = BrowseProtobufConverter.convert(req, _qparser);
 //		System.out.println("get query 2: "

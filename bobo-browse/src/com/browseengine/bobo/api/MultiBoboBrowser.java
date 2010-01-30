@@ -14,12 +14,14 @@ import org.apache.log4j.Logger;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.MultiSearcher;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.SortField;
 
 import com.browseengine.bobo.facets.FacetHandler;
-import com.browseengine.bobo.search.MultiTopDocsSortedHitCollector;
+import com.browseengine.bobo.sort.MultiSortCollector;
+import com.browseengine.bobo.sort.SortCollector;
 
 
 /**
@@ -135,44 +137,34 @@ public class MultiBoboBrowser extends MultiSearcher implements Browsable
   public BrowseResult browse(BrowseRequest req) throws BrowseException
   {
 
+    final BrowseResult result = new BrowseResult();
+
     long start = System.currentTimeMillis();
-    
     int offset = req.getOffset();
     int count = req.getCount();
-    
+
     if (offset<0 || count<0){
-    	throw new IllegalArgumentException("both offset and count must be > 0: "+offset+"/"+count);
+	  throw new IllegalArgumentException("both offset and count must be > 0: "+offset+"/"+count);
     }
+    SortCollector collector = getSortCollector(req.getSort(),req.getQuery(), offset, count, req.isFetchStoredFields(),false);
     
-    TopDocsSortedHitCollector hitCollector = getSortedHitCollector(req.getSort(),offset,count,req.isFetchStoredFields());
-
-    Map<String, FacetAccessible> mergedMap = new HashMap<String,FacetAccessible>();
-    browse(req, hitCollector, mergedMap);
-    
-    BrowseResult finalResult = new BrowseResult();
-
-    finalResult.setNumHits(hitCollector.getTotalHits());
-    finalResult.setTotalDocs(numDocs());
-    finalResult.addAll(mergedMap);
-    
-    BrowseHit[] hits;
-    try
-    {
-      hits = hitCollector.getTopDocs();
+    Map<String, FacetAccessible> facetCollectors = new HashMap<String, FacetAccessible>();
+    browse(req, collector, facetCollectors);
+    BrowseHit[] hits = null;
+    try{
+      hits = collector.topDocs();
     }
-    catch (IOException e)
-    {
-      logger.error(e.getMessage(),e);
-      hits=new BrowseHit[0];
+    catch (IOException e){
+      logger.error(e.getMessage(), e);
+      hits = new BrowseHit[0];
     }
-    
-    finalResult.setHits(hits);
-    
+    result.setHits(hits);
+    result.setNumHits(collector.getTotalHits());
+    result.setTotalDocs(numDocs());
+    result.addAll(facetCollectors);
     long end = System.currentTimeMillis();
-    
-    finalResult.setTime(end - start);
-    
-    return finalResult;
+    result.setTime(end - start);
+    return result;
   }
   
   /**
@@ -268,36 +260,41 @@ public class MultiBoboBrowser extends MultiSearcher implements Browsable
     return names;
   }
   
-  public FacetHandler getFacetHandler(String name)
+  public FacetHandler<?> getFacetHandler(String name)
   {
     Browsable[] subBrowsers = getSubBrowsers();
     for (Browsable subBrowser : subBrowsers)
     {
-      FacetHandler subHandler = subBrowser.getFacetHandler(name);
+      FacetHandler<?> subHandler = subBrowser.getFacetHandler(name);
       if (subHandler!=null) return subHandler;
     }
     return null;
   }
 	
   
-  public void setFacetHandler(FacetHandler facetHandler) throws IOException
+  public void setFacetHandler(FacetHandler<?> facetHandler) throws IOException
   {
 	Browsable[] subBrowsers = getSubBrowsers();
 	for (Browsable subBrowser : subBrowsers)
 	{
-		try {
-			subBrowser.setFacetHandler((FacetHandler)facetHandler.clone());
-		} catch (CloneNotSupportedException e) {
-			throw new RuntimeException(e.getMessage(),e);
-		}
+	  subBrowser.setFacetHandler(facetHandler);
 	}
   }
 
-  public TopDocsSortedHitCollector getSortedHitCollector(SortField[] sort,
-                                                         int offset,
-                                                         int count,
-                                                         boolean fetchStoredFields)
+  public SortCollector getSortCollector(SortField[] sort, Query q,int offset, int count, boolean fetchStoredFields,
+		boolean forceScoring) {
+	if (_subBrowsers.length==1){
+		return _subBrowsers[0].getSortCollector(sort, q, offset, count, fetchStoredFields, forceScoring);
+	}
+	return new MultiSortCollector(this, q, sort, offset, count, forceScoring,fetchStoredFields);
+  }
+  
+  public void close() throws IOException
   {
-    return new MultiTopDocsSortedHitCollector(this,sort,offset,count,fetchStoredFields);
+    Browsable[] subBrowsers = getSubBrowsers();
+    for (Browsable subBrowser : subBrowsers)
+    {
+      subBrowser.close();
+    }
   }
 }

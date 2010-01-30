@@ -10,6 +10,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField;
+import org.apache.lucene.util.Version;
 
 import com.browseengine.bobo.api.BrowseException;
 import com.browseengine.bobo.api.BrowseRequest;
@@ -120,7 +121,7 @@ public class BoboCmdlineApp {
 				String queryString = qString;
 	            if (queryString!=null)
 	            {
-	              QueryParser qparser = new QueryParser("contents",new StandardAnalyzer());
+	              QueryParser qparser = new QueryParser(Version.LUCENE_CURRENT,"contents",new StandardAnalyzer(Version.LUCENE_CURRENT));
 	              Query q;
 	              try
 	              {
@@ -276,7 +277,7 @@ public class BoboCmdlineApp {
 							System.out.println(e.getMessage()+", default rev to false");
 						}
 					  }
-					  sortList.add(new SortField(sortName,rev));
+					  sortList.add(new SortField(sortName,SortField.CUSTOM,rev));
 					}
 				}
 				_reqBuilder.applySort(sortList.toArray(new SortField[sortList.size()]));
