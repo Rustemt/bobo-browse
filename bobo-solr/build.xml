@@ -1,8 +1,9 @@
 <project name="bobo-solr" default="dist">
 		<property name="bobo.root" location="../" />
 		<property name="src" value="src"/>
-        <property name="lib.master" value="${bobo.root}/lib/master"/>
-	    <property name="solr-lib" value="lib"/>
+        <property name="lib.root" value="${bobo.root}/lib"/>
+        <property name="lib.master" value="${lib.root}/master"/>
+	    <property name="solr-lib" value="${lib.root}/solr"/>
         <property name="dist" value="${bobo.root}/dist"/>
 
     	<property file="${bobo.root}/version.properties" />

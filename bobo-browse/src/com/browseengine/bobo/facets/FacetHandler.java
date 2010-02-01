@@ -274,7 +274,9 @@ public abstract class FacetHandler<D>
 	 */
 	abstract public String[] getFieldValues(BoboIndexReader reader,int id);
 	
-	abstract public Object[] getRawFieldValues(BoboIndexReader reader,int id);
+	public Object[] getRawFieldValues(BoboIndexReader reader,int id){
+		return getFieldValues(reader, id);
+	}
 	
 	/**
 	 * Gets a single field value

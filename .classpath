@@ -7,8 +7,6 @@
 	<classpathentry kind="src" path="bobo-browse/src"/>
 	<classpathentry kind="src" path="bobo-service/src"/>
 	<classpathentry kind="src" path="test/src"/>
-	<classpathentry kind="lib" path="bobo-solr/lib/apache-solr-core-1.4-dev.jar"/>
-	<classpathentry kind="lib" path="bobo-solr/lib/apache-solr-solrj-1.4-dev.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/master/ant.jar"/>
 	<classpathentry kind="lib" path="lib/master/commons-cli.jar"/>
@@ -34,5 +32,7 @@
 	<classpathentry kind="lib" path="lib/master/zoie-2.0.0-rc1.jar"/>
 	<classpathentry kind="lib" path="lib/master/commons-configuration.jar"/>
 	<classpathentry kind="lib" path="lib/master/commons-lang.jar"/>
+	<classpathentry kind="lib" path="lib/solr/solr-core.jar"/>
+	<classpathentry kind="lib" path="lib/solr/solr-solrj.jar"/>
 	<classpathentry kind="output" path="output"/>
 </classpath>
