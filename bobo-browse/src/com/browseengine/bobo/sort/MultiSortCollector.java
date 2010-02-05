@@ -65,12 +65,10 @@ public class MultiSortCollector extends SortCollector {
 	      try
 	      {
 	    	BrowseHit[] subHits = _subCollectors[i].topDocs();
-	    	for (BrowseHit hit : subHits)
-	        {
-	    	  hit.setDocid(hit.getDocid() + base);
-	          hit.setStoredFields(hit.getStoredFields());
-	        }
-	        iteratorList.add(Arrays.asList(subHits).iterator());
+	    	if(subHits.length > 0)
+	    	{
+	    	  iteratorList.add(Arrays.asList(subHits).iterator());	    	  
+	    	}
 	      }
 	      catch(IOException ioe)
 	      {
