@@ -58,7 +58,7 @@ public class MultiDocIdComparator extends DocComparator implements Cloneable{
         Comparable c1,c2;
         for (int i=0;i<_comparators.length;++i){
             c1 = _comparators[i].value(_doc);
-            c2 = _comparators[i].value(other._doc);
+            c2 = other._comparators[i].value(other._doc);
             v = c1.compareTo(c2);
             if (v!=0) {
                 break;
