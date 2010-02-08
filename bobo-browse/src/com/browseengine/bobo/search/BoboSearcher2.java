@@ -264,7 +264,7 @@ public class BoboSearcher2 extends IndexSearcher{
         	int start = _docStarts[i];
             collector.setNextReader(_subReaders[i], start);
             validator.setNextReader(_subReaders[i], start);
-            Scorer scorer = weight.scorer(_subReaders[i], !collector.acceptsDocsOutOfOrder(), true);
+            Scorer scorer = weight.scorer(_subReaders[i], true, true);
             if (scorer != null) {
             	collector.setScorer(scorer);
             	target = scorer.nextDoc();
@@ -292,7 +292,7 @@ public class BoboSearcher2 extends IndexSearcher{
         	int start = _docStarts[i];
         	collector.setNextReader(_subReaders[i], start);
         	validator.setNextReader(_subReaders[i], start);
-            Scorer scorer = weight.scorer(_subReaders[i], !collector.acceptsDocsOutOfOrder(), true);
+            Scorer scorer = weight.scorer(_subReaders[i], true, false);
             if (scorer!=null){
             	collector.setScorer(scorer);
 	        	DocIdSetIterator filterDocIdIterator = filterDocIdSet.iterator(); // CHECKME: use ConjunctionScorer here?

@@ -1049,7 +1049,7 @@ public class BoboTestCase extends TestCase {
 		try{
 		  BrowseRequest br=new BrowseRequest();
 		  QueryParser parser=new QueryParser(Version.LUCENE_CURRENT,"shape",new StandardAnalyzer(Version.LUCENE_CURRENT));
-		  br.setQuery(parser.parse("square"));
+		  br.setQuery(parser.parse("square OR circle"));
 	      br.setCount(10);
 	      br.setOffset(0);
 	      
@@ -1066,16 +1066,17 @@ public class BoboTestCase extends TestCase {
 	      ospec.setExpandSelection(true);
 	      br.setFacetSpec("color", ospec);
 	      HashMap<String,List<BrowseFacet>> answer=new HashMap<String,List<BrowseFacet>>();
-	      answer.put("color", Arrays.asList(new BrowseFacet[]{new BrowseFacet("blue",1),new BrowseFacet("red",2)}));
+	      answer.put("color", Arrays.asList(new BrowseFacet[]{new BrowseFacet("blue",2),new BrowseFacet("green",1),new BrowseFacet("red",2)}));
 	      doTest(br,2,answer,new String[]{"7","1"});
 	      
 	      br.clearSelections();
-	      answer.put("color", Arrays.asList(new BrowseFacet[]{new BrowseFacet("blue",1),new BrowseFacet("red",2)}));
-	      doTest(br,3,answer,new String[]{"7","1","5"});
+	      answer.put("color", Arrays.asList(new BrowseFacet[]{new BrowseFacet("blue",2),new BrowseFacet("green",1),new BrowseFacet("red",2)}));
+	      doTest(br,5,answer,new String[]{"7","1","3","4","5"});
 	      
 		}
 		catch(Exception e)
 		{
+			e.printStackTrace();
 			fail(e.getMessage());
 		}
 	}
