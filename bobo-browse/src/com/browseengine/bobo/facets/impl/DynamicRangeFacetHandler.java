@@ -17,8 +17,8 @@ import com.browseengine.bobo.api.BrowseSelection;
 import com.browseengine.bobo.api.FacetSpec;
 import com.browseengine.bobo.facets.FacetCountCollector;
 import com.browseengine.bobo.facets.FacetCountCollectorSource;
-import com.browseengine.bobo.facets.FacetHandler;
 import com.browseengine.bobo.facets.FacetHandlerFactory;
+import com.browseengine.bobo.facets.RuntimeFacetHandler;
 import com.browseengine.bobo.facets.FacetHandler.FacetDataNone;
 import com.browseengine.bobo.facets.data.FacetDataCache;
 import com.browseengine.bobo.facets.filter.RandomAccessFilter;
@@ -28,7 +28,7 @@ import com.browseengine.bobo.sort.DocComparatorSource;
  * @author ymatsuda
  *
  */
-public abstract class DynamicRangeFacetHandler extends FacetHandler<FacetDataNone> implements FacetHandlerFactory<DynamicRangeFacetHandler>
+public abstract class DynamicRangeFacetHandler extends RuntimeFacetHandler<FacetDataNone> implements FacetHandlerFactory<DynamicRangeFacetHandler>
 {
   protected final String _dataFacetName;
   protected RangeFacetHandler _dataFacetHandler;
@@ -79,22 +79,24 @@ public abstract class DynamicRangeFacetHandler extends FacetHandler<FacetDataNon
     final List<String> list = buildAllRangeStrings();
     
     return new FacetCountCollectorSource(){
-
 		@Override
-		public FacetCountCollector getFacetCountCollector(
-				BoboIndexReader reader, int docBase) {
-			FacetDataCache dataCache = _dataFacetHandler.getFacetData(reader);
-			return new DynamicRangeFacetCountCollector(getName(), dataCache,docBase, fspec, list);
+		public FacetCountCollector getFacetCountCollector(BoboIndexReader reader, int docBase) {
+		    FacetDataCache dataCache = _dataFacetHandler.getFacetData(reader);
+		    return new DynamicRangeFacetCountCollector(getName(), dataCache, docBase, fspec, list);
 		}
-    	
     };
-   
   }
 
   @Override
   public String[] getFieldValues(BoboIndexReader reader,int docid)
   {
     return _dataFacetHandler.getFieldValues(reader,docid);
+  }
+  
+  @Override
+  public Object[] getRawFieldValues(BoboIndexReader reader,int docid)
+  {
+    return _dataFacetHandler.getRawFieldValues(reader,docid);
   }
 
   @Override
@@ -112,7 +114,7 @@ public abstract class DynamicRangeFacetHandler extends FacetHandler<FacetDataNon
   
   private class DynamicRangeFacetCountCollector extends RangeFacetCountCollector
   {
-    DynamicRangeFacetCountCollector(String name,FacetDataCache dataCache,int docBase, FacetSpec fspec, List<String> predefinedList)
+    DynamicRangeFacetCountCollector(String name, FacetDataCache dataCache,int docBase, FacetSpec fspec, List<String> predefinedList)
     {
       super(name,dataCache,docBase,fspec,predefinedList);
     }
