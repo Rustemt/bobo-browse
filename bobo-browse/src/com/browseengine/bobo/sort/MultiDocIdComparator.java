@@ -1,29 +1,14 @@
 package com.browseengine.bobo.sort;
 
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Scorer;
 
 
-public class MultiDocIdComparator extends DocComparator implements Cloneable{
-	private DocComparator[] _comparators;
+public class MultiDocIdComparator extends DocComparator {
+	private final DocComparator[] _comparators;
+	
 	public MultiDocIdComparator(DocComparator[] comparators){
 		_comparators = comparators;
-	}
-	
-	private MultiDocIdComparator(){
-		
-	}
-	
-	
-	@Override
-	public Object clone(){
-		DocComparator[] copy = _comparators == null ? null : new DocComparator[_comparators.length];
-		if (copy!=null){
-			System.arraycopy(_comparators, 0, copy, 0, _comparators.length);
-		}
-		
-		MultiDocIdComparator cloneObj = new MultiDocIdComparator();
-		cloneObj._comparators = copy;
-		return cloneObj;
 	}
 	
 	public int compare(ScoreDoc doc1, ScoreDoc doc2) {
@@ -35,6 +20,12 @@ public class MultiDocIdComparator extends DocComparator implements Cloneable{
 		return v;
 	}
 
+	public void setScorer(Scorer scorer){
+	  for (DocComparator comparator : _comparators){
+	    comparator.setScorer(scorer);
+	  }
+	}
+	
 	@Override
 	public Comparable value(ScoreDoc doc) {
 		return new MultiDocIdComparable(doc, _comparators);

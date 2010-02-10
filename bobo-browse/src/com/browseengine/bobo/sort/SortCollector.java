@@ -1,28 +1,21 @@
 package com.browseengine.bobo.sort;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.lucene.search.Collector;
-import org.apache.lucene.search.FieldComparator;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField;
 
 import com.browseengine.bobo.api.BoboCustomSortField;
-import com.browseengine.bobo.api.BoboIndexReader;
 import com.browseengine.bobo.api.BoboSubBrowser;
 import com.browseengine.bobo.api.Browsable;
 import com.browseengine.bobo.api.BrowseHit;
 import com.browseengine.bobo.facets.FacetHandler;
 import com.browseengine.bobo.sort.DocComparatorSource.DocIdDocComparatorSource;
 import com.browseengine.bobo.sort.DocComparatorSource.RelevanceDocComparatorSource;
-import com.browseengine.bobo.sort.OneSortCollector.MyScoreDoc;
 
 public abstract class SortCollector extends Collector {
 	protected Collector _collector = null;
@@ -147,20 +140,19 @@ public abstract class SortCollector extends Collector {
 			}	
 		}
 
-		
-		SortCollector collector = null;
+		DocComparatorSource compSource;
 		if (sort.length==1){
 			SortField sf = convert(browser,sort[0]);
-			collector = new OneSortCollector(getComparatorSource(browser,sf),sort,browser, offset, count, doScoring,fetchStoredFields);
+			compSource = getComparatorSource(browser,sf);
 		}
 		else{
 			DocComparatorSource[] compSources = new DocComparatorSource[sort.length];
 			for (int i = 0; i<sort.length;++i){
 				compSources[i]=getComparatorSource(browser,convert(browser,sort[i]));
 			}
-			collector = new MultiFieldSortCollector(compSources,sort,browser, offset, count, doScoring,fetchStoredFields);
+			compSource = new MultiDocIdComparatorSource(compSources);
 		}
-		return collector;
+		return new SortCollectorImpl(compSource, sort, browser, offset, count, doScoring, fetchStoredFields);
 	}
 	
 	public void setCollector(Collector collector){
@@ -170,30 +162,4 @@ public abstract class SortCollector extends Collector {
 	public Collector getCollector(){
 		return _collector; 
 	}
-	
-	protected static BrowseHit[] buildHits(MyScoreDoc[] scoreDocs,SortField[] sortFields,Map<String,FacetHandler<?>> facetHandlerMap,boolean fetchStoredFields) throws IOException{
-		ArrayList<BrowseHit> hitList = new ArrayList<BrowseHit>(scoreDocs.length);
-		Collection<FacetHandler<?>> facetHandlers= facetHandlerMap.values();
-	    for (MyScoreDoc fdoc : scoreDocs)
-	    {
-	      BoboIndexReader reader = fdoc._srcReader;
-	      BrowseHit hit=new BrowseHit();
-	      if (fetchStoredFields){
-	    	 
-	         hit.setStoredFields(reader.document(fdoc.doc));
-	      }
-	      Map<String,String[]> map = new HashMap<String,String[]>();
-	      for (FacetHandler<?> facetHandler : facetHandlers)
-	      {
-	          map.put(facetHandler.getName(),facetHandler.getFieldValues(reader,fdoc.doc));//-fdoc.queue.base));
-	      }
-	      hit.setFieldValues(map);
-	      hit.setDocid(fdoc.doc+fdoc.queue.base);
-	      hit.setScore(fdoc.score);
-	      hit.setComparable(fdoc.getValue());
-	      hitList.add(hit);
-	    }
-	    BrowseHit[] hits = hitList.toArray(new BrowseHit[hitList.size()]);
-	    return hits;
-	  }
 }

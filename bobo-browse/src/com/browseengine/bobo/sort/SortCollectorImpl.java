@@ -3,7 +3,9 @@ package com.browseengine.bobo.sort;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
@@ -19,27 +21,29 @@ import com.browseengine.bobo.api.BrowseHit;
 import com.browseengine.bobo.facets.FacetHandler;
 import com.browseengine.bobo.util.ListMerger;
 
-public class OneSortCollector extends SortCollector {
+public class SortCollectorImpl extends SortCollector {
   private final LinkedList<DocIDPriorityQueue> _pqList;
   private final int _numHits;
   private int _totalHits;
   private MyScoreDoc _bottom;
+  private MyScoreDoc _tmpScoreDoc;
   private boolean _queueFull;
   private DocComparator _currentComparator;
   private DocComparatorSource _compSource;
   private DocIDPriorityQueue _currentQueue;
   private BoboIndexReader _currentReader=null;
-  private MyScoreDoc _tmpDoc;
   
   private final boolean _doScoring;
   private float _maxScore;
   private Scorer _scorer;
-  private int _offset;
-  private int _count;
+  private final int _offset;
+  private final int _count;
   
   private final Map<String,FacetHandler<?>> _facetHandlerMap;
 	
   static class MyScoreDoc extends ScoreDoc {
+    private static final long serialVersionUID = 1L;
+    
     DocIDPriorityQueue queue;
     BoboIndexReader _srcReader;
     public MyScoreDoc(){
@@ -57,20 +61,20 @@ public class OneSortCollector extends SortCollector {
     }
   }
 	
-  public OneSortCollector(DocComparatorSource compSource,SortField[] sortFields,BoboSubBrowser boboBrowser,int offset,int count,boolean doScoring,boolean fetchStoredFields) {
+  public SortCollectorImpl(DocComparatorSource compSource,SortField[] sortFields,BoboSubBrowser boboBrowser,int offset,int count,boolean doScoring,boolean fetchStoredFields) {
 	super(sortFields,fetchStoredFields);
+    assert (offset>=0 && count>0);
 	_facetHandlerMap = boboBrowser.getFacetHandlerMap();
     _compSource = compSource;
     _pqList = new LinkedList<DocIDPriorityQueue>();
-    assert (offset>=0 && count>0);
     _numHits = offset + count;
     _offset = offset;
     _count = count;
     _totalHits = 0;
+    _maxScore = 0.0f;
     _queueFull = false;
     _doScoring = doScoring;
-    _tmpDoc = new MyScoreDoc();
-    _maxScore = 0.0f;
+    _tmpScoreDoc = new MyScoreDoc();
   }
 
   @Override
@@ -91,15 +95,15 @@ public class OneSortCollector extends SortCollector {
     }
     
     if (_queueFull){
-      _tmpDoc.doc = doc;
-      _tmpDoc.score = score;
-      int v = _currentComparator.compare(_bottom,_tmpDoc);
-      if (v==0 || (v<0) ){
+      _tmpScoreDoc.doc = doc;
+      _tmpScoreDoc.score = score;
+      
+      if (_currentComparator.compare(_bottom,_tmpScoreDoc)<=0){
         return;
       }
       MyScoreDoc tmp = _bottom;
-      _bottom = (MyScoreDoc)_currentQueue.replace(_tmpDoc);
-      _tmpDoc = tmp;
+      _bottom = (MyScoreDoc)_currentQueue.replace(_tmpScoreDoc);
+      _tmpScoreDoc = tmp;
     }
     else{ 
       _bottom = (MyScoreDoc)_currentQueue.add(new MyScoreDoc(doc,score,_currentQueue,_currentReader));
@@ -117,8 +121,8 @@ public class OneSortCollector extends SortCollector {
     _currentQueue = new DocIDPriorityQueue(_currentComparator,
                                            _numHits, docBase);
 
-    _tmpDoc.queue=_currentQueue;
-    _tmpDoc._srcReader = _currentReader;
+    _tmpScoreDoc.queue = _currentQueue;
+    _tmpScoreDoc._srcReader = _currentReader;
     _pqList.add(_currentQueue);
     _queueFull = false;
   }
@@ -169,10 +173,37 @@ public class OneSortCollector extends SortCollector {
               r = v;
             }
           }
-          
           return r;
         }
       });
     return buildHits(resList.toArray(new MyScoreDoc[resList.size()]), _sortFields, _facetHandlerMap, _fetchStoredFields);
+  }
+  
+  protected static BrowseHit[] buildHits(MyScoreDoc[] scoreDocs,SortField[] sortFields,Map<String,FacetHandler<?>> facetHandlerMap,boolean fetchStoredFields)
+    throws IOException
+  {
+    ArrayList<BrowseHit> hitList = new ArrayList<BrowseHit>(scoreDocs.length);
+    Collection<FacetHandler<?>> facetHandlers= facetHandlerMap.values();
+    for (MyScoreDoc fdoc : scoreDocs)
+    {
+      BoboIndexReader reader = fdoc._srcReader;
+      BrowseHit hit=new BrowseHit();
+      if (fetchStoredFields){
+         
+         hit.setStoredFields(reader.document(fdoc.doc));
+      }
+      Map<String,String[]> map = new HashMap<String,String[]>();
+      for (FacetHandler<?> facetHandler : facetHandlers)
+      {
+          map.put(facetHandler.getName(),facetHandler.getFieldValues(reader,fdoc.doc));//-fdoc.queue.base));
+      }
+      hit.setFieldValues(map);
+      hit.setDocid(fdoc.doc+fdoc.queue.base);
+      hit.setScore(fdoc.score);
+      hit.setComparable(fdoc.getValue());
+      hitList.add(hit);
+    }
+    BrowseHit[] hits = hitList.toArray(new BrowseHit[hitList.size()]);
+    return hits;
   }
 }
