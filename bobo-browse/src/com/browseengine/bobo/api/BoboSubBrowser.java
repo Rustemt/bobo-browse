@@ -155,6 +155,14 @@ public class BoboSubBrowser extends BoboSearcher2 implements Browsable
                      Collector collector,
                      Map<String, FacetAccessible> facetMap) throws BrowseException
   {
+    browse(req, collector, facetMap, 0);
+  }
+  
+  public void browse(BrowseRequest req,
+                     Collector collector,
+                     Map<String, FacetAccessible> facetMap,
+                     int start) throws BrowseException
+  {
     if (_reader == null)
       return;
 
@@ -278,7 +286,7 @@ public class BoboSubBrowser extends BoboSearcher2 implements Browsable
       
       try
       {
-        search(q, finalFilter, collector);
+        search(createWeight(q), finalFilter, collector, start);
       }
       finally
       {

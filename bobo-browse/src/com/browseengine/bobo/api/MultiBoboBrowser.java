@@ -49,11 +49,16 @@ public class MultiBoboBrowser extends MultiSearcher implements Browsable
    * 
    * @param req
    *          BrowseRequest
-   * @param hitCollector
-   *          HitCollector for the hits generated during a search
+   * @param hc
+   *          Collector for the hits generated during a search
    *          
    */
-  public void browse(BrowseRequest req,final Collector hitCollector,Map<String, FacetAccessible> facetMap) throws BrowseException
+  public void browse(BrowseRequest req,final Collector hc, Map<String, FacetAccessible> facetMap) throws BrowseException
+  {
+    browse(req, hc, facetMap, 0);
+  }
+
+  public void browse(BrowseRequest req,final Collector hc, Map<String, FacetAccessible> facetMap, int start) throws BrowseException
   {
     Browsable[] browsers = getSubBrowsers();
     int[] starts = getStarts();
@@ -64,26 +69,9 @@ public class MultiBoboBrowser extends MultiSearcher implements Browsable
 	    Map<String,FacetAccessible> facetColMap = new HashMap<String,FacetAccessible>();
 	    for (int i = 0; i < browsers.length; i++)
 	    {
-	      final int start = starts[i];
-	        
-	       final Collector hc = new Collector() {
-	          public void setScorer(Scorer scorer) throws IOException {
-	        	  hitCollector.setScorer(scorer);
-	          }
-	          public void collect(int doc) throws IOException {
-	        	  hitCollector.collect(doc);
-	          }
-	          public void setNextReader(IndexReader reader, int docBase) throws IOException {
-	        	  hitCollector.setNextReader(reader, start + docBase);
-	          }
-	          public boolean acceptsDocsOutOfOrder() {
-	            return hitCollector.acceptsDocsOutOfOrder();
-	          }
-	       };
-	        
 	      try
 	      {
-		      browsers[i].browse(req,hc,facetColMap);
+		      browsers[i].browse(req, hc, facetColMap, (start + starts[i]));
 	      }
 	      finally
 	      {

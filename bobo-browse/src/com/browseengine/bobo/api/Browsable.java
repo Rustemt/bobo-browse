@@ -21,6 +21,11 @@ public interface Browsable extends Searchable
 	            Collector hitCollector,
 	            Map<String,FacetAccessible> facets) throws BrowseException;
 
+	void browse(BrowseRequest req, 
+	            Collector hitCollector,
+	            Map<String,FacetAccessible> facets,
+	            int start) throws BrowseException;
+
 	BrowseResult browse(BrowseRequest req) throws BrowseException;
 
 	Set<String> getFacetNames();

@@ -253,24 +253,29 @@ public class BoboSearcher2 extends IndexSearcher{
     }
     
     @Override
-    public void search(Weight weight, Filter filter, Collector collector)
-            throws IOException {
+    public void search(Weight weight, Filter filter, Collector collector) throws IOException
+    {
+      search(weight, filter, collector, 0);
+    }
+    
+    public void search(Weight weight, Filter filter, Collector collector, int start) throws IOException
+    {
         final FacetValidator validator = createFacetValidator();
         int target = 0;
         
         if (filter == null)
         {
           for (int i = 0; i < _subReaders.length; i++) { // search each subreader
-        	int start = _docStarts[i];
-            collector.setNextReader(_subReaders[i], start);
-            validator.setNextReader(_subReaders[i], start);
+        	int docStart = start + _docStarts[i];
+            collector.setNextReader(_subReaders[i], docStart);
+            validator.setNextReader(_subReaders[i], docStart);
             Scorer scorer = weight.scorer(_subReaders[i], true, true);
             if (scorer != null) {
             	collector.setScorer(scorer);
             	target = scorer.nextDoc();
                 while(target!=DocIdSetIterator.NO_MORE_DOCS)
                 {
-                  if(validator.validate(target+start))
+                  if(validator.validate(target))
                   {
                 	collector.collect(target);
                     target = scorer.nextDoc();
@@ -289,9 +294,9 @@ public class BoboSearcher2 extends IndexSearcher{
         for (int i = 0; i < _subReaders.length; i++) {
         	DocIdSet filterDocIdSet = filter.getDocIdSet(_subReaders[i]);
         	if (filterDocIdSet == null) return;
-        	int start = _docStarts[i];
-        	collector.setNextReader(_subReaders[i], start);
-        	validator.setNextReader(_subReaders[i], start);
+        	int docStart = start + _docStarts[i];
+        	collector.setNextReader(_subReaders[i], docStart);
+        	validator.setNextReader(_subReaders[i], docStart);
             Scorer scorer = weight.scorer(_subReaders[i], true, false);
             if (scorer!=null){
             	collector.setScorer(scorer);
@@ -311,7 +316,7 @@ public class BoboSearcher2 extends IndexSearcher{
 	              
 	              if(doc == target) // permitted by filter
 	              {
-	                if(validator.validate(doc+start))
+	                if(validator.validate(doc))
 	                {
 	                  collector.collect(doc);
 	                  
