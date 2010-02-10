@@ -103,7 +103,7 @@ public abstract class DefaultFacetCountCollector implements FacetCountCollector
         		  throw new IllegalArgumentException("facet comparator factory not specified");
         	  }
         	  
-        	  Comparator<Integer> comparator = comparatorFactory.newComparator(new FieldValueAccessor(){
+        	  final Comparator<Integer> comparator = comparatorFactory.newComparator(new FieldValueAccessor(){
 
 				public String getFormatedValue(int index) {
 					return _dataCache.valArray.get(index);
@@ -114,19 +114,24 @@ public abstract class DefaultFacetCountCollector implements FacetCountCollector
 				}
         		  
         	  }, _count);
-              facetColl=new LinkedList<BrowseFacet>();    
-              BoundedPriorityQueue<Integer> pq=new BoundedPriorityQueue<Integer>(comparator,max);
+              facetColl=new LinkedList<BrowseFacet>();
+              
+              Comparator<Integer> pqComparator = new Comparator<Integer>(){
+
+				public int compare(Integer o1, Integer o2) {
+					return -comparator.compare(o1, o2);
+				}
+            	  
+              };
+              
+              BoundedPriorityQueue<Integer> pq=new BoundedPriorityQueue<Integer>(pqComparator,max);
               
               for (int i=1;i<_count.length;++i) // exclude zero
               {
                 int hits=_count[i];
                 if (hits>=minCount)
                 {
-                  if(!pq.offer(i))
-                  {
-                    // pq is full. we can safely ignore any facet with <=hits.
-                    minCount = hits + 1;
-                  }
+                  pq.offer(i);
                 }
               }
               

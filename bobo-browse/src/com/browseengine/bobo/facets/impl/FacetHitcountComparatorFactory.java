@@ -12,10 +12,10 @@ public class FacetHitcountComparatorFactory implements ComparatorFactory {
 		return new Comparator<Integer>(){
 
 			public int compare(Integer f1, Integer f2) {
-				int val = counts[f1] - counts[f2];
+				int val = counts[f2] - counts[f1];
 				if (val==0)
 		        {
-		            val=f2-f1;
+		            val=f1-f2;
 		        }
 		        return val;
 			}

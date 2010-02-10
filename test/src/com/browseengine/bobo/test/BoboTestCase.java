@@ -1028,6 +1028,26 @@ public class BoboTestCase extends TestCase {
       
 	}
 	
+	public void testMinHit(){
+		BrowseRequest br=new BrowseRequest();
+	    br.setCount(3);
+	    br.setOffset(0);
+	    
+	    BrowseSelection sel = new BrowseSelection("shape");
+	    sel.addValue("square");
+	    br.addSelection(sel);
+	      
+	    FacetSpec spec = new FacetSpec();
+	    spec.setMinHitCount(0);
+	    spec.setOrderBy(FacetSortSpec.OrderHitsDesc);
+	    br.setFacetSpec("color", spec);
+	      	      
+	    HashMap<String,List<BrowseFacet>> answer=new HashMap<String,List<BrowseFacet>>();
+	    answer.put("color", Arrays.asList(new BrowseFacet[]{new BrowseFacet("red",2),new BrowseFacet("blue",1),new BrowseFacet("green",0)}));
+	      
+	    doTest(br,3,answer,null);
+	}
+	
 	public void testRandomAccessFacet() throws Exception
 	{
 	  BrowseRequest br=new BrowseRequest();

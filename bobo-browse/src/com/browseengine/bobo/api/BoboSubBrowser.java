@@ -205,11 +205,12 @@ public class BoboSubBrowser extends BoboSearcher2 implements Browsable
         }
         else
         {
-          FacetSpec fspec = new FacetSpec(); // OrderValueAsc,
+          /*FacetSpec fspec = new FacetSpec(); // OrderValueAsc,
           fspec.setMaxCount(0);
           fspec.setMinHitCount(1);
           
-          fspec.setExpandSelection(ospec.isExpandSelection());
+          fspec.setExpandSelection(ospec.isExpandSelection());*/
+          FacetSpec fspec = ospec;
 
           facetHitCollector = new FacetHitCollector();
           facetHitCollector.facetHandler = handler;
