@@ -42,9 +42,9 @@ public abstract class DocComparatorSource {
 					final int v2 = values[doc2.doc];
 					// cannot return v1-v2 because it could overflow
 					if (v1 < v2) {
-						return 1;
-					} else if (v1 > v2) {
 						return -1;
+					} else if (v1 > v2) {
+						return 1;
 					} else {
 						return 0;
 					}
@@ -195,9 +195,9 @@ public abstract class DocComparatorSource {
 					final long v2 = values[doc2.doc];
 					// cannot return v1-v2 because it could overflow
 					if (v1 < v2) {
-						return 1;
-					} else if (v1 > v2) {
 						return -1;
+					} else if (v1 > v2) {
+						return 1;
 					} else {
 						return 0;
 					}
@@ -228,9 +228,9 @@ public abstract class DocComparatorSource {
 					final float v2 = values[doc2.doc];
 					// cannot return v1-v2 because it could overflow
 					if (v1 < v2) {
-						return 1;
-					} else if (v1 > v2) {
 						return -1;
+					} else if (v1 > v2) {
+						return 1;
 					} else {
 						return 0;
 					}
@@ -261,9 +261,9 @@ public abstract class DocComparatorSource {
 					final double v2 = values[doc2.doc];
 					// cannot return v1-v2 because it could overflow
 					if (v1 < v2) {
-						return 1;
-					} else if (v1 > v2) {
 						return -1;
+					} else if (v1 > v2) {
+						return 1;
 					} else {
 						return 0;
 					}
@@ -289,9 +289,9 @@ public abstract class DocComparatorSource {
 					final double v2 = doc2.score;
 					// cannot return v1-v2 because it could overflow
 					if (v1 < v2) {
-						return 1;
-					} else if (v1 > v2) {
 						return -1;
+					} else if (v1 > v2) {
+						return 1;
 					} else {
 						return 0;
 					}

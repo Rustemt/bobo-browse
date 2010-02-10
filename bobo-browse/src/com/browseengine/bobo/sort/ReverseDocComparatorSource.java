@@ -25,7 +25,7 @@ public class ReverseDocComparatorSource extends DocComparatorSource {
 		
 		@Override
 		public int compare(ScoreDoc doc1, ScoreDoc doc2) {
-			return -1*_comparator.compare(doc1, doc2);
+			return -_comparator.compare(doc1, doc2);
 		}
 
 		@Override

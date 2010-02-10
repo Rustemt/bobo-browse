@@ -1024,9 +1024,8 @@ public class BoboTestCase extends TestCase {
       answer.put("color", Arrays.asList(new BrowseFacet[]{new BrowseFacet("red",3),new BrowseFacet("blue",2)}));
       
       doTest(br,7,answer,new String[]{"7","1","2"});
-      
-      
 	}
+	
 	
 	public void testMinHit(){
 		BrowseRequest br=new BrowseRequest();
@@ -1063,6 +1062,18 @@ public class BoboTestCase extends TestCase {
       
       assertEquals(facet.getValue(), "0005");
       assertEquals(facet.getHitCount(), 1);
+	}
+	
+	public void testQueryWithScore() throws Exception{
+		BrowseRequest br=new BrowseRequest();
+		  QueryParser parser=new QueryParser(Version.LUCENE_CURRENT,"color",new StandardAnalyzer(Version.LUCENE_CURRENT));
+		  br.setQuery(parser.parse("color:red OR shape:square"));
+	      br.setCount(10);
+	      br.setOffset(0);
+	      
+	      br.setSort(new SortField[]{SortField.FIELD_SCORE});
+	      doTest(br,4,null,new String[]{"1","7","2","5"});
+	      
 	}
 
   public void testBrowseWithQuery(){

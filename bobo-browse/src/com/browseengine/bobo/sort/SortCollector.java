@@ -86,7 +86,8 @@ public abstract class SortCollector extends Collector {
 			compSource = new DocIdDocComparatorSource();
 		}
 		else if (SortField.FIELD_SCORE.equals(sf)){
-			compSource = new RelevanceDocComparatorSource();
+			// we want to do reverse sorting regardless for relevance
+			compSource = new ReverseDocComparatorSource(new RelevanceDocComparatorSource());
 		}
 		else if (sf instanceof BoboCustomSortField){
 			BoboCustomSortField custField = (BoboCustomSortField)sf;
