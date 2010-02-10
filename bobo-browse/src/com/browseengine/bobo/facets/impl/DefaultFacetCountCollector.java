@@ -116,17 +116,9 @@ public abstract class DefaultFacetCountCollector implements FacetCountCollector
         	  }, _count);
               facetColl=new LinkedList<BrowseFacet>();
               
-              Comparator<Integer> pqComparator = new Comparator<Integer>(){
-
-				public int compare(Integer o1, Integer o2) {
-					return -comparator.compare(o1, o2);
-				}
-            	  
-              };
+              BoundedPriorityQueue<Integer> pq=new BoundedPriorityQueue<Integer>(comparator,max);
               
-              BoundedPriorityQueue<Integer> pq=new BoundedPriorityQueue<Integer>(pqComparator,max);
-              
-              for (int i=1;i<_count.length;++i) // exclude zero
+              for (int i=1;i<_count.length;++i)
               {
                 int hits=_count[i];
                 if (hits>=minCount)

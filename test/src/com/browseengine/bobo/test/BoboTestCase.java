@@ -1566,7 +1566,7 @@ public class BoboTestCase extends TestCase {
 						Integer size1 = (Integer)fieldValueAccessor.getRawValue(v1);
 						Integer size2 = (Integer)fieldValueAccessor.getRawValue(v2);
 						
-						int val = size2-size1;
+						int val = size1-size2;
 						if (val == 0){
 							val = counts[v1]-counts[v2];
 						}
@@ -1583,7 +1583,7 @@ public class BoboTestCase extends TestCase {
 						int v2 = Integer.parseInt(o2.getValue());
 						int val = v2-v1;
 						if (val == 0){
-							val = o1.getHitCount()-o2.getHitCount();
+							val = o2.getHitCount()-o1.getHitCount();
 						}
 						return val;
 					}
