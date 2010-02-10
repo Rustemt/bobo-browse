@@ -26,7 +26,7 @@ public class FacetHitcountComparatorFactory implements ComparatorFactory {
 	public static Comparator<BrowseFacet> FACET_HITS_COMPARATOR = new Comparator<BrowseFacet>(){
 
 		public int compare(BrowseFacet f1, BrowseFacet f2) {
-			int val = f1.getHitCount() - f2.getHitCount();
+			int val = f2.getHitCount() - f1.getHitCount();
 			if (val==0)
 	        {
 	            val=f1.getValue().compareTo(f2.getValue());

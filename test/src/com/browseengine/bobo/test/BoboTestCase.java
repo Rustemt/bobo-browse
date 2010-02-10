@@ -83,6 +83,8 @@ import com.browseengine.bobo.facets.FacetHandler.TermCountSize;
 import com.browseengine.bobo.facets.data.PredefinedTermListFactory;
 import com.browseengine.bobo.facets.data.TermListFactory;
 import com.browseengine.bobo.facets.impl.CompactMultiValueFacetHandler;
+import com.browseengine.bobo.facets.impl.FacetHitcountComparatorFactory;
+import com.browseengine.bobo.facets.impl.FacetValueComparatorFactory;
 import com.browseengine.bobo.facets.impl.FilteredRangeFacetHandler;
 import com.browseengine.bobo.facets.impl.MultiValueFacetHandler;
 import com.browseengine.bobo.facets.impl.PathFacetHandler;
@@ -905,6 +907,18 @@ public class BoboTestCase extends TestCase {
       answer.put("shape", Arrays.asList(new BrowseFacet[]{new BrowseFacet("circle",2),new BrowseFacet("rectangle",2),new BrowseFacet("square",3)}));
       
       doTest(br,7,answer,null);
+      
+      Comparator<BrowseFacet> valComp = new FacetValueComparatorFactory().newComparator();
+      
+      int v = valComp.compare(new BrowseFacet("red",3), new BrowseFacet("blue",2));
+      assertTrue(v>0);
+      
+      valComp = new FacetHitcountComparatorFactory().newComparator();
+      v = valComp.compare(new BrowseFacet("red",3), new BrowseFacet("blue",2));
+      assertTrue(v<0);
+      
+      v = valComp.compare(new BrowseFacet("red",3), new BrowseFacet("blue",3));
+      assertTrue(v>0);
 	}
 	
 	public void testMultiDate()

@@ -87,9 +87,14 @@ public class PathFacetCountCollector implements FacetCountCollector
         BoundedPriorityQueue<BrowseFacet> pq=null;
         
         if (_comparatorFactory!=null){
-        	Comparator<BrowseFacet> comparator = _comparatorFactory.newComparator();
+        	final Comparator<BrowseFacet> comparator = _comparatorFactory.newComparator();
         	
-        	pq=new BoundedPriorityQueue<BrowseFacet>(comparator,maxCount);
+        	pq=new BoundedPriorityQueue<BrowseFacet>(new Comparator<BrowseFacet>(){
+
+				public int compare(BrowseFacet o1, BrowseFacet o2) {
+					return -comparator.compare(o1,o2);				}
+        		
+        	},maxCount);
         }
         
 		String[] startParts=null;
@@ -250,7 +255,8 @@ public class PathFacetCountCollector implements FacetCountCollector
 		Iterator<BrowseFacet> finalIter = ListMerger.mergeLists(iterList.toArray((Iterator<BrowseFacet>[])new Iterator[iterList.size()]), _comparatorFactory==null ? new FacetValueComparatorFactory().newComparator(): _comparatorFactory.newComparator());
 		while (finalIter.hasNext())
 	    {
-			finalList.addFirst(finalIter.next());
+			BrowseFacet f = finalIter.next();
+			finalList.addFirst(f);
 	    }
 		return finalList;
 	}
