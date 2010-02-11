@@ -33,7 +33,6 @@ public class CheckBoxSelection extends Composite implements ClickHandler {
 				_panel.add(sel);
 			}
 		}
-		initWidget(_panel);
 	}
 
 	public void onClick(ClickEvent event) {
