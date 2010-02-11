@@ -1,15 +1,20 @@
 package com.browseengine.bobo.demo.client;
 
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.List;
 
-import com.browseengine.bobo.gwt.widgets.CheckBoxSelection;
+import com.browseengine.bobo.gwt.widgets.AbstractFacetView;
+import com.browseengine.bobo.gwt.widgets.CheckBoxFacetView;
+import com.browseengine.bobo.gwt.widgets.FacetSelectionListener;
+import com.browseengine.bobo.gwt.widgets.FacetValue;
+import com.browseengine.bobo.gwt.widgets.FacetValueSelectionEvent;
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-public class BoboDemo implements EntryPoint {
+public class BoboDemo implements EntryPoint,FacetSelectionListener {
   /**
    * The message displayed to the user when the server cannot be reached or
    * returns an error.
@@ -25,19 +30,29 @@ public class BoboDemo implements EntryPoint {
    * This is the entry point method.
    */
   public void onModuleLoad() {
-    CheckBoxSelection checkbox = new CheckBoxSelection("color");
-    
-    //BrowseFacet[] facets = new BrowseFacet[]{new BrowseFacet("red",1234),new BrowseFacet("green",510)};
+    CheckBoxFacetView checkbox = new CheckBoxFacetView("color");
+    checkbox.addFacetSelectionListener(this);
+    FacetValue[] facets = new FacetValue[]{new FacetValue("red",1234),new FacetValue("green",510)};
     //String[] facets = new String[]{"red","green"};
-    List<String> list = new LinkedList<String>();
-    list.add("red");
-    list.add("green");
-    checkbox.updateSelections(list);
+    List<FacetValue> list = Arrays.asList(facets);
+    checkbox.updateSelections(list,null);
     Label label = new Label();
     label.setText("test");
     VerticalPanel panel = new VerticalPanel();
     panel.add(label);
     panel.add(checkbox);
     RootPanel.get("toptab").add(panel);
+  }
+
+  public void handleSelectedEvent(FacetValueSelectionEvent event) {
+	Window.alert(event.getSource().getName()+":"+event.getFacetValue()+" -> selected");
+  }
+
+  public void handleUnSelectedEvent(FacetValueSelectionEvent event) {
+	Window.alert(event.getSource().getName()+":"+event.getFacetValue()+" -> unselected");
+  }
+  
+  public void handleClearSelections(AbstractFacetView view){
+	Window.alert("selections cleared: "+view.getName());
   }
 }
