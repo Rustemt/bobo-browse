@@ -12,7 +12,7 @@ public class BoboResult implements IsSerializable {
 	private long _time;
 	
 	private Map<String,List<FacetValue>> _facetResults;
-	private List<Map<String,String[]>> _hits;
+	private List<BoboHit> _hits;
 
 	public int getNumHits() {
 		return _numHits;
@@ -46,11 +46,11 @@ public class BoboResult implements IsSerializable {
 		_facetResults = facetResults;
 	}
 
-	public List<Map<String, String[]>> getHits() {
+	public List<BoboHit> getHits() {
 		return _hits;
 	}
 
-	public void setHits(List<Map<String, String[]>> hits) {
+	public void setHits(List<BoboHit> hits) {
 		_hits = hits;
 	}
 

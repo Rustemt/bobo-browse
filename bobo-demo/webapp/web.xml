@@ -15,19 +15,16 @@
   </listener>
 
   <!-- Servlets -->
- <!--
   <servlet>
-    <servlet-name>searchServlet</servlet-name>
-    <servlet-class>proj.zoie.admin.server.search.SearchServiceServlet</servlet-class>
+    <servlet-name>boboServlet</servlet-name>
+    <servlet-class>com.browseengine.bobo.demo.servlet.BoboDemoServlet</servlet-class>
   </servlet>
   
   
   <servlet-mapping>
-    <servlet-name>searchServlet</servlet-name>
-    <url-pattern>/zoieadmin/search</url-pattern>
+    <servlet-name>boboServlet</servlet-name>
+    <url-pattern>/bobo-demo/bobo-search</url-pattern>
   </servlet-mapping>
-  
-  -->
   
   <!-- Default page to serve -->
   <welcome-file-list>
