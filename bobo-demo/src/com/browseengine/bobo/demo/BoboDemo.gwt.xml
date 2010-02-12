@@ -4,6 +4,7 @@
   <inherits name='com.google.gwt.user.User'/>
   <inherits name='com.google.gwt.event.Event'/>
   <inherits name='com.browseengine.bobo.gwt.BoboWidget'/>
+  <inherits name='com.browseengine.bobo.gwt.BoboService'/>
 
   <!-- Inherit the default GWT style sheet.  You can change       -->
   <!-- the theme of your GWT application by uncommenting          -->
