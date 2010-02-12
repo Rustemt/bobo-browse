@@ -8,6 +8,7 @@ import com.browseengine.bobo.gwt.widgets.CheckBoxFacetView;
 import com.browseengine.bobo.gwt.widgets.FacetSelectionListener;
 import com.browseengine.bobo.gwt.widgets.FacetValue;
 import com.browseengine.bobo.gwt.widgets.FacetValueSelectionEvent;
+import com.browseengine.bobo.gwt.widgets.TagCloudFacetView;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Label;
@@ -41,6 +42,11 @@ public class BoboDemo implements EntryPoint,FacetSelectionListener {
     VerticalPanel panel = new VerticalPanel();
     panel.add(label);
     panel.add(checkbox);
+    
+    TagCloudFacetView TagCloudFacetView = new TagCloudFacetView("color");
+    TagCloudFacetView.addFacetSelectionListener(this);
+    TagCloudFacetView.updateSelections(list,null);
+    panel.add(TagCloudFacetView);
     RootPanel.get("toptab").add(panel);
   }
 

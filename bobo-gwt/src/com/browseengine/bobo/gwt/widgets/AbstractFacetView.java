@@ -10,7 +10,10 @@ public abstract class AbstractFacetView extends Composite{
 	protected final String _name;
 	private final List<FacetSelectionListener> _lsnrs;
 	
-	public static final String FACET_HEADING_STYLE="gwt-bobo-facet-heading";
+	public static final String FACET_HEADING_STYLE="bobo-facet-heading";
+	public static final String FACET_VALUE_STYLE="bobo-facet-value";
+	public static final String FACET_ALL_STYLE="bobo-facet-all";
+	
 	protected AbstractFacetView(String name){
 		_name = name;
 		_lsnrs = new LinkedList<FacetSelectionListener>();
@@ -18,6 +21,11 @@ public abstract class AbstractFacetView extends Composite{
 	
 	public String getName(){
 		return _name;
+	}
+	
+	public String getBoboStyleName(String type){
+		String style=getStyleName();
+		return style+"-"+type;
 	}
 	
 	public void addFacetSelectionListener(FacetSelectionListener lsnr){

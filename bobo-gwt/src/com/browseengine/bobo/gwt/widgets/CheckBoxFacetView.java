@@ -13,16 +13,17 @@ import com.google.gwt.user.client.ui.Widget;
 public class CheckBoxFacetView extends AbstractFacetView implements ClickHandler {
     private final VerticalPanel _panel;
     private final CheckBox _clearSel;
+    private final Label _headingLabel;
     private volatile int _counter;
+    
 	public CheckBoxFacetView(String name) {
 		super(name);
 		_counter = 0;
 		VerticalPanel topPane = new VerticalPanel();
 		_panel = new VerticalPanel();
-		Label label = new Label();
-		label.setText(name);
-		label.setStyleName(FACET_HEADING_STYLE);
-		topPane.add(label);
+		_headingLabel = new Label();
+		_headingLabel.setText(name);
+		topPane.add(_headingLabel);
 		topPane.add(_panel);
 		
 		_clearSel = new CheckBox();
@@ -33,6 +34,14 @@ public class CheckBoxFacetView extends AbstractFacetView implements ClickHandler
 		initWidget(topPane);
 	}
 	
+	
+	@Override
+	public void setStyleName(String style) {
+		super.setStyleName(style);
+		_headingLabel.setStyleName(getBoboStyleName(FACET_HEADING_STYLE));
+		_clearSel.setStyleName(getBoboStyleName(FACET_ALL_STYLE));
+	}
+
 	@Override
 	public void updateSelections(List<FacetValue> selections,Set<String> selected){
 		_panel.clear();
@@ -41,6 +50,7 @@ public class CheckBoxFacetView extends AbstractFacetView implements ClickHandler
 		if (selections!=null){
 			for (FacetValue facet : selections){
 				CheckBox sel = new CheckBox();
+				sel.setStyleName(getBoboStyleName(FACET_VALUE_STYLE));
 				sel.setName(_name);
 				String val = facet.getValue();
 				if (selected!=null && selected.contains(val)){
