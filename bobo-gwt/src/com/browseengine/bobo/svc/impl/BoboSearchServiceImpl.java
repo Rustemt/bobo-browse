@@ -105,7 +105,9 @@ public class BoboSearchServiceImpl implements BoboSearchService {
 				List<BrowseFacet> facetList = accessor.getFacets();
 				ArrayList<FacetValue> facetValList = new ArrayList<FacetValue>(facetList.size());
 				for (BrowseFacet bfacet : facetList){
-					FacetValue fval = new FacetValue(bfacet.getValue(),bfacet.getHitCount());
+					FacetValue fval = new FacetValue();
+					fval.setValue(bfacet.getValue());
+					fval.setCount(bfacet.getHitCount());
 					facetValList.add(fval);
 				}
 				fmap.put(entry.getKey(), facetValList);

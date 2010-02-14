@@ -1,16 +1,22 @@
 package com.browseengine.bobo.gwt.widgets;
 
+import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.client.ui.Label;
 
-public class FacetValue {
-	private final String _value;
-	private final int _count;
+public class FacetValue implements IsSerializable{
+	private String _value;
+	private int _count;
 	
-	public FacetValue(String value,int count){
+	
+
+	public void setValue(String value) {
 		_value = value;
+	}
+
+	public void setCount(int count) {
 		_count = count;
 	}
-	
+
 	public String getValue(){
 		return _value;
 	}

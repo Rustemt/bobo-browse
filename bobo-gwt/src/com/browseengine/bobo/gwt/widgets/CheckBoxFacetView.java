@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.uibinder.client.UiConstructor;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -16,7 +17,7 @@ public class CheckBoxFacetView extends AbstractFacetView implements ClickHandler
     private final Label _headingLabel;
     private volatile int _counter;
     
-	public CheckBoxFacetView(String name) {
+	public @UiConstructor CheckBoxFacetView(String name) {
 		super(name);
 		_counter = 0;
 		VerticalPanel topPane = new VerticalPanel();

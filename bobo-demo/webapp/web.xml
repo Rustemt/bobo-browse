@@ -23,7 +23,7 @@
   
   <servlet-mapping>
     <servlet-name>boboServlet</servlet-name>
-    <url-pattern>/bobo-demo/bobo-search</url-pattern>
+    <url-pattern>/bobodemo/bobo-search</url-pattern>
   </servlet-mapping>
   
   <!-- Default page to serve -->

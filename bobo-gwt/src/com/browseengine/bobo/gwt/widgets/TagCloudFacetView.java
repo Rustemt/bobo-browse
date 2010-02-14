@@ -7,6 +7,7 @@ import java.util.Set;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.uibinder.client.UiConstructor;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -18,7 +19,7 @@ public class TagCloudFacetView extends AbstractFacetView {
 	private final FlowPanel _selTagsPane;
 	private final FlowPanel _mainPane;
     
-	public TagCloudFacetView(String name){
+	public @UiConstructor TagCloudFacetView(String name){
 		super(name);
 		VerticalPanel topPane = new VerticalPanel();
 		_headingLabel = new Label();
