@@ -99,7 +99,7 @@ public class BoboAppController extends AbstractController {
 		        }
 		      } 
 		      else {
-		        lst[i] = new SortField(part,top);
+		        lst[i] = new SortField(part,SortField.STRING,top);
 		      }
 		    }
 		    return new Sort(lst);

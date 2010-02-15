@@ -63,7 +63,7 @@ public class SearchResultMerger<T>
       for(Iterator<T> iterator : sources)
       {
         IteratorCtx ctx = new IteratorCtx(iterator);
-        if(ctx.fetch()) _queue.insert(ctx);
+        if(ctx.fetch()) _queue.add(ctx);
       }
     }
 
@@ -79,7 +79,7 @@ public class SearchResultMerger<T>
       T val = ctx._curVal;
       if (ctx.fetch())
       {
-        _queue.adjustTop();
+        _queue.updateTop();
       }
       else
       {

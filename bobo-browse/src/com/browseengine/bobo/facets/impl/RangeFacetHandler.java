@@ -1,21 +1,18 @@
 package com.browseengine.bobo.facets.impl;
 
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.search.ScoreDocComparator;
 
 import com.browseengine.bobo.api.BoboIndexReader;
 import com.browseengine.bobo.api.BrowseSelection;
 import com.browseengine.bobo.api.FacetAccessible;
 import com.browseengine.bobo.api.FacetSpec;
 import com.browseengine.bobo.facets.FacetCountCollector;
+import com.browseengine.bobo.facets.FacetCountCollectorSource;
 import com.browseengine.bobo.facets.FacetHandler;
 import com.browseengine.bobo.facets.FacetHandlerFactory;
 import com.browseengine.bobo.facets.data.FacetDataCache;
@@ -26,25 +23,21 @@ import com.browseengine.bobo.facets.filter.FacetRangeFilter;
 import com.browseengine.bobo.facets.filter.RandomAccessAndFilter;
 import com.browseengine.bobo.facets.filter.RandomAccessFilter;
 import com.browseengine.bobo.facets.filter.RandomAccessNotFilter;
+import com.browseengine.bobo.facets.filter.FacetRangeFilter.FacetRangeValueConverter;
+import com.browseengine.bobo.sort.DocComparatorSource;
 
-public class RangeFacetHandler extends FacetHandler implements FacetHandlerFactory
-{
+public class RangeFacetHandler extends FacetHandler<FacetDataCache> implements FacetHandlerFactory<RangeFacetHandler>{
 	private static Logger logger = Logger.getLogger(RangeFacetHandler.class);
-	
-	private FacetDataCache _dataCache;
 	private final String _indexFieldName;
 	private final TermListFactory _termListFactory;
 	private final List<String> _predefinedRanges;
-	private final boolean _autoRange;
 	
 	public RangeFacetHandler(String name,String indexFieldName,TermListFactory termListFactory,List<String> predefinedRanges)
 	{
 		super(name);
 		_indexFieldName = indexFieldName;
-		_dataCache = null;
 		_termListFactory = termListFactory;
 		_predefinedRanges = predefinedRanges;
-		_autoRange = false;
 	}
 	
 	public RangeFacetHandler(String name,TermListFactory termListFactory,List<String> predefinedRanges)
@@ -62,64 +55,30 @@ public class RangeFacetHandler extends FacetHandler implements FacetHandlerFacto
         this(name,indexFieldName,null,predefinedRanges);
     }
 	
-	public RangeFacetHandler(String name,String indexFieldName,TermListFactory termListFactory,boolean autoRange)
-	{
-		super(name);
-		_dataCache = null;
-		_indexFieldName = indexFieldName;
-		_termListFactory = termListFactory;
-		_predefinedRanges = null;
-		_autoRange = autoRange;
-	}
 	
-	public RangeFacetHandler(String name,TermListFactory termListFactory,boolean autoRange)
+	public RangeFacetHandler newInstance()
     {
-        this(name,name,termListFactory,autoRange);
+	  return new RangeFacetHandler(getName(),_indexFieldName,_termListFactory,_predefinedRanges);
     }
-	
-	public RangeFacetHandler(String name,String indexFieldName,boolean autoRange)
-    {
-        this(name,indexFieldName,null,autoRange);
-    }
-	
-	public RangeFacetHandler(String name,boolean autoRange)
-	{
-		this(name,name,null,autoRange);
-	}
-	
-	public FacetHandler newInstance()
-    {
-	  if (_predefinedRanges == null)
-	  {
-        return new RangeFacetHandler(getName(),_indexFieldName,_termListFactory,_autoRange);
-	  }
-	  else
-	  {
-        return new RangeFacetHandler(getName(),_indexFieldName,_termListFactory,_predefinedRanges);
-	  }
-    }
-	
-	public boolean isAutoRange()
-	{
-		return _autoRange;
-	}
 
 	@Override
-	public ScoreDocComparator getScoreDocComparator() {
-		return _dataCache.getScoreDocComparator();
+	public DocComparatorSource getDocComparatorSource() {
+		return new FacetDataCache.FacetDocComparatorSource(this);
 	}
 	
 	@Override
-	public String[] getFieldValues(int id) {
-		return new String[]{_dataCache.valArray.get(_dataCache.orderArray.get(id))};
+	public String[] getFieldValues(BoboIndexReader reader,int id) {
+		FacetDataCache dataCache = getFacetData(reader);
+		return new String[]{dataCache.valArray.get(dataCache.orderArray.get(id))};
 	}
 	
 	@Override
-	public Object[] getRawFieldValues(int id){
-		return new Object[]{_dataCache.valArray.getRawValue(_dataCache.orderArray.get(id))};
+	public Object[] getRawFieldValues(BoboIndexReader reader,int id){
+		FacetDataCache dataCache = getFacetData(reader);
+		return new Object[]{dataCache.valArray.getRawValue(dataCache.orderArray.get(id))};
 	}
 
-	private static String[] getRangeStrings(String rangeString)
+	public static String[] getRangeStrings(String rangeString)
 	{
 	  int index=rangeString.indexOf('[');
       int index2=rangeString.indexOf(" TO ");
@@ -138,84 +97,14 @@ public class RangeFacetHandler extends FacetHandler implements FacetHandlerFacto
       }
 	}
 	
-	static int[] parse(FacetDataCache dataCache,String rangeString)
-	{
-		String[] ranges = getRangeStrings(rangeString);
-	    String lower=ranges[0];
-	    String upper=ranges[1];
-	    
-	    if ("*".equals(lower))
-	    {
-	      lower=null;
-	    }
-	    
-	    if ("*".equals(upper))
-	    {
-	      upper=null;
-	    }
-	    
-	    int start,end;
-	    if (lower==null)
-	    {
-	    	start=1;
-	    }
-	    else
-	    {
-	    	start=dataCache.valArray.indexOf(lower);
-	    	if (start<0)
-	    	{
-	    		start=-(start + 1);
-	    	}
-	    }
-	    
-	    if (upper==null)
-	    {
-	    	end=dataCache.valArray.size()-1;
-	    }
-	    else
-	    {
-	    	end=dataCache.valArray.indexOf(upper);
-	    	if (end<0)
-	    	{
-	    		end=-(end + 1);
-	    		end=Math.max(0,end-1);
-	    	}
-	    }
-	    
-	    return new int[]{start,end};
-	}
 	
-	public final FacetDataCache getDataCache()
-	{
-		return _dataCache;
-	}
 	
   @Override
   public RandomAccessFilter buildRandomAccessFilter(String value, Properties prop) throws IOException
   {
-    int[] range = parse(_dataCache,value);
-    if(range != null) 
-      return new FacetRangeFilter(_dataCache, range[0], range[1]);
-    else
-      return null;
+      return new FacetRangeFilter(this,value);
   }
   
-  public static int[] convertIndexes(FacetDataCache dataCache,String[] vals)
-  {
-    IntList list = new IntArrayList();
-    for (String val : vals)
-    {
-      int[] range = parse(dataCache,val);
-      if ( range!=null)
-      {
-        for (int i=range[0];i<=range[1];++i)
-        {
-          list.add(i);
-        }
-      }
-    }
-    return list.toIntArray();
-  }
 	
   @Override
   public RandomAccessFilter buildRandomAccessAndFilter(String[] vals,Properties prop) throws IOException
@@ -243,7 +132,7 @@ public class RangeFacetHandler extends FacetHandler implements FacetHandlerFacto
   {
     if (vals.length > 1)
     {
-      return new FacetOrFilter(_dataCache,convertIndexes(_dataCache,vals),isNot);
+      return new FacetOrFilter(this,vals,isNot,FacetRangeValueConverter.instance);
     }
     else
     {
@@ -258,25 +147,23 @@ public class RangeFacetHandler extends FacetHandler implements FacetHandlerFacto
   }
 
   @Override
-	public FacetCountCollector getFacetCountCollector(BrowseSelection sel,FacetSpec ospec) {
-		return new RangeFacetCountCollector(_name,_dataCache,ospec,_predefinedRanges,_autoRange);
-	}
+  public FacetCountCollectorSource getFacetCountCollectorSource(final BrowseSelection sel,final FacetSpec ospec) {
+	  return new FacetCountCollectorSource() {
+		
+		@Override
+		public FacetCountCollector getFacetCountCollector(BoboIndexReader reader,
+				int docBase) {
+			FacetDataCache dataCache = getFacetData(reader);
+			return new RangeFacetCountCollector(_name,dataCache,docBase,ospec,_predefinedRanges);
+		}
+	};
+    
+  }
 
 	@Override
-	public void load(BoboIndexReader reader) throws IOException {
-	    if (_dataCache == null)
-	    {
-	      _dataCache = new FacetDataCache();
-	    }
-		_dataCache.load(_indexFieldName, reader, _termListFactory);
-	}
-	
-	@Override
-	public FacetAccessible merge(FacetSpec fspec,
-			List<FacetAccessible> facetList) {
-		if (_autoRange) throw new IllegalStateException("Cannot support merging for autoRange");
-		return super.merge(fspec, facetList);
-	}
-
-	
+	public FacetDataCache load(BoboIndexReader reader) throws IOException {
+	    FacetDataCache dataCache = new FacetDataCache();
+		dataCache.load(_indexFieldName, reader, _termListFactory);
+		return dataCache;
+	}	
 }

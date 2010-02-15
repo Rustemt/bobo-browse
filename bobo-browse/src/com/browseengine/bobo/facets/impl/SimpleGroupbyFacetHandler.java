@@ -10,9 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.ScoreDocComparator;
-import org.apache.lucene.search.SortField;
 
 import com.browseengine.bobo.api.BoboIndexReader;
 import com.browseengine.bobo.api.BrowseFacet;
@@ -22,19 +21,22 @@ import com.browseengine.bobo.api.FacetSpec;
 import com.browseengine.bobo.api.FieldValueAccessor;
 import com.browseengine.bobo.api.FacetSpec.FacetSortSpec;
 import com.browseengine.bobo.facets.FacetCountCollector;
+import com.browseengine.bobo.facets.FacetCountCollectorSource;
 import com.browseengine.bobo.facets.FacetHandler;
 import com.browseengine.bobo.facets.FacetHandlerFactory;
+import com.browseengine.bobo.facets.FacetHandler.FacetDataNone;
 import com.browseengine.bobo.facets.filter.RandomAccessAndFilter;
 import com.browseengine.bobo.facets.filter.RandomAccessFilter;
+import com.browseengine.bobo.sort.DocComparator;
+import com.browseengine.bobo.sort.DocComparatorSource;
 import com.browseengine.bobo.util.BoundedPriorityQueue;
 
-public class SimpleGroupbyFacetHandler extends FacetHandler implements FacetHandlerFactory{
+public class SimpleGroupbyFacetHandler extends FacetHandler<FacetDataNone> implements FacetHandlerFactory<SimpleGroupbyFacetHandler>{
 	private final LinkedHashSet<String> _fieldsSet;
 	private ArrayList<SimpleFacetHandler> _facetHandlers;
 	private Map<String,SimpleFacetHandler> _facetHandlerMap;
 	
 	private static final String SEP=",";
-	private int _maxdoc;
 	private final String _sep;
 	
 	public SimpleGroupbyFacetHandler(String name, LinkedHashSet<String> dependsOn,String separator) {
@@ -42,7 +44,6 @@ public class SimpleGroupbyFacetHandler extends FacetHandler implements FacetHand
 		_fieldsSet = dependsOn;
 		_facetHandlers = null;
 		_facetHandlerMap = null;
-		_maxdoc = 0;
 		_sep = separator;
 	}
 	
@@ -65,22 +66,29 @@ public class SimpleGroupbyFacetHandler extends FacetHandler implements FacetHand
 	}
 
 	@Override
-	public FacetCountCollector getFacetCountCollector(BrowseSelection sel,
-			FacetSpec fspec) {
-		ArrayList<DefaultFacetCountCollector> collectorList = new ArrayList<DefaultFacetCountCollector>(_facetHandlers.size());
-		for (SimpleFacetHandler facetHandler : _facetHandlers){
-			collectorList.add((DefaultFacetCountCollector)facetHandler.getFacetCountCollector(sel, fspec));
-		}
-		return new GroupbyFacetCountCollector(_name,fspec, collectorList.toArray(new DefaultFacetCountCollector[collectorList.size()]),_maxdoc,_sep);
+	public FacetCountCollectorSource getFacetCountCollectorSource(final BrowseSelection sel,final FacetSpec fspec) {
+		return new FacetCountCollectorSource(){
+
+			@Override
+			public FacetCountCollector getFacetCountCollector(
+					BoboIndexReader reader, int docBase) {
+				ArrayList<DefaultFacetCountCollector> collectorList = new ArrayList<DefaultFacetCountCollector>(_facetHandlers.size());
+				for (SimpleFacetHandler facetHandler : _facetHandlers){
+					collectorList.add((DefaultFacetCountCollector)(facetHandler.getFacetCountCollectorSource(sel, fspec).getFacetCountCollector(reader, docBase)));
+				}
+				return new GroupbyFacetCountCollector(_name,fspec, collectorList.toArray(new DefaultFacetCountCollector[collectorList.size()]),reader.maxDoc(),_sep);
+			}
+			
+		};
 	}
 
 	@Override
-	public String[] getFieldValues(int id) {
+	public String[] getFieldValues(BoboIndexReader reader,int id) {
 		ArrayList<String> valList = new ArrayList<String>();
-		for (FacetHandler handler : _facetHandlers){
+		for (FacetHandler<?> handler : _facetHandlers){
 			StringBuffer buf = new StringBuffer();
 			boolean firsttime = true;
-			String[] vals = handler.getFieldValues(id);
+			String[] vals = handler.getFieldValues(reader,id);
 			if (vals!=null && vals.length > 0){
 				if (!firsttime){
 					buf.append(",");
@@ -98,25 +106,34 @@ public class SimpleGroupbyFacetHandler extends FacetHandler implements FacetHand
 	}
 	
 	@Override
-	public Object[] getRawFieldValues(int id){
-		return getFieldValues(id);
+	public Object[] getRawFieldValues(BoboIndexReader reader,int id){
+		return getFieldValues(reader,id);
 	}
 
 	@Override
-	public ScoreDocComparator getScoreDocComparator() {
-		ArrayList<ScoreDocComparator> comparatorList = new ArrayList<ScoreDocComparator>(_fieldsSet.size());
-		for (FacetHandler handler : _facetHandlers){
-			comparatorList.add(handler.getScoreDocComparator());
-		}
-		return new GroupbyScoreDocComparator(comparatorList.toArray(new ScoreDocComparator[comparatorList.size()]));
+	public DocComparatorSource getDocComparatorSource() {
+		return new DocComparatorSource(){
+
+			@Override
+			public DocComparator getComparator(IndexReader reader, int docbase)
+					throws IOException {
+				ArrayList<DocComparator> comparatorList = new ArrayList<DocComparator>(_fieldsSet.size());
+				for (FacetHandler<?> handler : _facetHandlers){
+					comparatorList.add(handler.getDocComparatorSource().getComparator(reader, docbase));
+				}
+				return new GroupbyDocComparator(comparatorList.toArray(new DocComparator[comparatorList.size()]));
+			}
+			
+		};
+		
 	}
 
 	@Override
-	public void load(BoboIndexReader reader) throws IOException {
+	public FacetDataNone load(BoboIndexReader reader) throws IOException {
 		_facetHandlers = new ArrayList<SimpleFacetHandler>(_fieldsSet.size());
 		_facetHandlerMap = new HashMap<String,SimpleFacetHandler>(_fieldsSet.size());
 		for (String name : _fieldsSet){
-			FacetHandler handler = reader.getFacetHandler(name);
+			FacetHandler<?> handler = reader.getFacetHandler(name);
 			if (handler==null || !(handler instanceof SimpleFacetHandler)){
 				throw new IllegalStateException("only simple facet handlers supported");
 			}
@@ -124,41 +141,37 @@ public class SimpleGroupbyFacetHandler extends FacetHandler implements FacetHand
 			_facetHandlers.add(sfh);
 			_facetHandlerMap.put(name, sfh);
 		}
-		_maxdoc = reader.maxDoc();
+		return FacetDataNone.instance;
 	}
 
-	public FacetHandler newInstance() {
+	public SimpleGroupbyFacetHandler newInstance() {
 		return new SimpleGroupbyFacetHandler(_name,_fieldsSet);
 	}
 	
 	
-	private static class GroupbyScoreDocComparator implements ScoreDocComparator{
-		private ScoreDocComparator[] _comparators;
+	private static class GroupbyDocComparator extends DocComparator{
+		private DocComparator[] _comparators;
 
-		public GroupbyScoreDocComparator(ScoreDocComparator[] comparators) {
+		public GroupbyDocComparator(DocComparator[] comparators) {
 			_comparators = comparators;
 		}
 		
 		public final int compare(ScoreDoc d1, ScoreDoc d2) {
 			int retval=0;
-			for (ScoreDocComparator comparator : _comparators){
+			for (DocComparator comparator : _comparators){
 				retval = comparator.compare(d1, d2);
 				if (retval!=0) break;
 			}
 			return retval;
 		}
 
-		public final int sortType() {
-			return SortField.CUSTOM;
-		}
-
-		public final Comparable sortValue(final ScoreDoc doc) {
+		public final Comparable value(final ScoreDoc doc) {
 			return new Comparable(){
 
 				public int compareTo(Object o) {
 					int retval = 0;
-					for (ScoreDocComparator comparator : _comparators){
-						retval = comparator.sortValue(doc).compareTo(o);
+					for (DocComparator comparator : _comparators){
+						retval = comparator.value(doc).compareTo(o);
 						if (retval != 0 ) break;
 					}
 					return retval;

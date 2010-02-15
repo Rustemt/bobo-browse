@@ -47,7 +47,7 @@ public class PropertiesIndexDataInterpreter implements ZoieIndexableInterpreter<
           for (String val : valList)
           {
             Field f = new Field(propName,val,Store.NO,Index.NOT_ANALYZED_NO_NORMS);
-            f.setOmitTf(true);
+            f.setOmitTermFreqAndPositions(true);
             doc.add(f);
           }
           doc.add(new Field(CONTENTS_FIELD_NAME,contentBuffer.toString(),Store.NO,Index.ANALYZED));
@@ -61,7 +61,7 @@ public class PropertiesIndexDataInterpreter implements ZoieIndexableInterpreter<
       
     }
 
-    public int getUID()
+    public long getUID()
     {
       return _prop.getID();
     }

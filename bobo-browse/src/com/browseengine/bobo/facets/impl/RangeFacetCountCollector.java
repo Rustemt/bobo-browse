@@ -1,15 +1,13 @@
 package com.browseengine.bobo.facets.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
-import java.util.TreeSet;
 
 import com.browseengine.bobo.api.BrowseFacet;
 import com.browseengine.bobo.api.FacetSpec;
 import com.browseengine.bobo.facets.FacetCountCollector;
 import com.browseengine.bobo.facets.data.FacetDataCache;
+import com.browseengine.bobo.facets.filter.FacetRangeFilter;
 import com.browseengine.bobo.util.BigSegmentedArray;
 
 public class RangeFacetCountCollector implements FacetCountCollector
@@ -17,26 +15,21 @@ public class RangeFacetCountCollector implements FacetCountCollector
   private final FacetSpec _ospec;
   private int[] _count;
   private final BigSegmentedArray _array;
-  private final FacetDataCache _dataCache;
+  private FacetDataCache _dataCache;
   private final String _name;
-  private final boolean _autoRange;
   private final List<String> _predefinedRanges;
   private int[][] _predefinedRangeIndexes;
+  private int _docBase;
   
-  public RangeFacetCountCollector(String name,RangeFacetHandler rangeFacetHandler,FacetSpec ospec,List<String> predefinedRanges,boolean autoRange)
-  {
-    this(name,rangeFacetHandler.getDataCache(),ospec,predefinedRanges,autoRange);
-  }
-  
-  protected RangeFacetCountCollector(String name,FacetDataCache dataCache,FacetSpec ospec,List<String> predefinedRanges,boolean autoRange)
+  protected RangeFacetCountCollector(String name,FacetDataCache dataCache,int docBase,FacetSpec ospec,List<String> predefinedRanges)
   {
       _name = name;
       _dataCache = dataCache;
-      _ospec=ospec;
-      _count=new int[_dataCache.freqs.length];
+	  _count=new int[_dataCache.freqs.length];
       _array = _dataCache.orderArray;
+      _docBase = docBase;
+      _ospec=ospec;
       _predefinedRanges = predefinedRanges;
-      _autoRange = autoRange;
       
       if (_predefinedRanges!=null)
       {
@@ -44,9 +37,10 @@ public class RangeFacetCountCollector implements FacetCountCollector
           int i=0;
           for (String range : _predefinedRanges)
           {
-              _predefinedRangeIndexes[i++]=RangeFacetHandler.parse(_dataCache,range);
+              _predefinedRangeIndexes[i++]=FacetRangeFilter.parse(_dataCache,range);
           }
       }
+
   }
   
   /**
@@ -85,7 +79,7 @@ public class RangeFacetCountCollector implements FacetCountCollector
   public BrowseFacet getFacet(String value)
   {
       BrowseFacet facet = null;
-      int[] range = RangeFacetHandler.parse(_dataCache,value);
+      int[] range = FacetRangeFilter.parse(_dataCache,value);
       if (range!=null)
       {
           int sum=0;
@@ -157,7 +151,7 @@ public class RangeFacetCountCollector implements FacetCountCollector
       result=(RangeFacet[])list.toArray(result);
       return foldChoices(result,max);
   }
-  
+  /*
   private List<BrowseFacet> buildDynamicRanges()
   {
       final TreeSet<BrowseFacet> facetSet=new TreeSet<BrowseFacet>(new Comparator<BrowseFacet>(){
@@ -191,14 +185,10 @@ public class RangeFacetCountCollector implements FacetCountCollector
       }
       
       return Arrays.asList(facets);
-  }
+  }*/
 
   public List<BrowseFacet> getFacets() {
       if (_ospec!=null){
-          if (_autoRange){
-              return buildDynamicRanges();
-          }
-          else{
               if (_predefinedRangeIndexes!=null)
                   {
                   int minCount=_ospec.getMinHitCount();
@@ -231,7 +221,6 @@ public class RangeFacetCountCollector implements FacetCountCollector
               {
                   return FacetCountCollector.EMPTY_FACET_LIST;
               }
-          }
       }
       else
       {

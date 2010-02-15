@@ -13,6 +13,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -20,6 +21,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.util.Version;
 
 import com.browseengine.bobo.api.BoboBrowser;
 import com.browseengine.bobo.api.BoboIndexReader;
@@ -30,7 +32,7 @@ import com.browseengine.bobo.facets.FacetHandler;
 
 public class IndexReaderTestCase extends TestCase {
 
-	private List<FacetHandler> _fconf;
+	private List<FacetHandler<?>> _fconf;
 	public IndexReaderTestCase() {
 	}
 
@@ -49,13 +51,13 @@ public class IndexReaderTestCase extends TestCase {
             BoboBrowser browser;
             BrowseResult result; 
             
-            IndexWriter writer=new IndexWriter(idxDir,new StandardAnalyzer(),true);
+            IndexWriter writer=new IndexWriter(idxDir,new StandardAnalyzer(Version.LUCENE_CURRENT),MaxFieldLength.UNLIMITED);
             writer.close();
 
             int dup = 0;
             for(int j = 0; j < 50; j++)
             {
-              IndexReader idxReader = IndexReader.open(idxDir);
+              IndexReader idxReader = IndexReader.open(idxDir,true);
               BoboIndexReader reader = BoboIndexReader.getInstance(idxReader,_fconf,workArea);
               
               req = new BrowseRequest();
@@ -85,7 +87,7 @@ public class IndexReaderTestCase extends TestCase {
               
               assertEquals(3*dup, result.getNumHits());
 
-              writer=new IndexWriter(idxDir,new StandardAnalyzer(),false);
+              writer=new IndexWriter(idxDir,new StandardAnalyzer(Version.LUCENE_CURRENT),MaxFieldLength.UNLIMITED);
               for(int k = 0; k <= j; k++)
               {
                 for(int i = 0; i < docs.length ; i++)

@@ -13,6 +13,7 @@ import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.Version;
 
 import com.browseengine.bobo.api.BoboBrowser;
 import com.browseengine.bobo.api.BoboIndexReader;
@@ -93,8 +94,8 @@ public abstract class FacetCountStatisicsGenerator
   
   public static void main(String[] args) throws Exception
   {
-    Directory idxDir = FSDirectory.getDirectory(new File("/Users/jwang/dataset/facet_idx_2/beef"));
-    QueryParser qp = new QueryParser("b",new StandardAnalyzer());
+    Directory idxDir = FSDirectory.open(new File("/Users/jwang/dataset/facet_idx_2/beef"));
+    QueryParser qp = new QueryParser(Version.LUCENE_CURRENT,"b",new StandardAnalyzer(Version.LUCENE_CURRENT));
     String q = "pc:yahoo";
     Query query = qp.parse(q);
     

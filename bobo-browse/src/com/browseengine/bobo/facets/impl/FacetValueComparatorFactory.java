@@ -12,7 +12,7 @@ public class FacetValueComparatorFactory implements ComparatorFactory {
 			FieldValueAccessor fieldValueAccessor, int[] counts) {
 		return new Comparator<Integer>(){
 			public int compare(Integer o1, Integer o2) {
-				return o1-o2;
+				return o2-o1;
 			}			
 		};
 	}

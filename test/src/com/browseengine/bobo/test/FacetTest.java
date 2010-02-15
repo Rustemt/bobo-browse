@@ -8,6 +8,7 @@ import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.Version;
 
 import com.browseengine.bobo.api.BoboBrowser;
 import com.browseengine.bobo.api.BoboIndexReader;
@@ -25,7 +26,7 @@ public class FacetTest {
 	public static void main(String[] args) throws Exception{
 		File idx = new File("/Users/jwang/dataset/people-search-index-norm/beef");
 		
-		Directory idxDir = FSDirectory.getDirectory(idx);
+		Directory idxDir = FSDirectory.open(idx);
 		IndexReader reader=IndexReader.open(idxDir,true);
 		
 		BoboIndexReader boboReader=BoboIndexReader.getInstance(reader);
@@ -40,7 +41,7 @@ public class FacetTest {
 	static void doBrowse(BoboBrowser browser) throws Exception
 	{
 		String q="java";
-		QueryParser parser=new QueryParser("b",new StandardAnalyzer());
+		QueryParser parser=new QueryParser(Version.LUCENE_CURRENT,"b",new StandardAnalyzer(Version.LUCENE_CURRENT));
 		Query query=parser.parse(q);
 		BrowseRequest br=new BrowseRequest();
 		//br.setQuery(query);

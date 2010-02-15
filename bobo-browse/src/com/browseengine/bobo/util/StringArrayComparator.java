@@ -1,5 +1,7 @@
 package com.browseengine.bobo.util;
 
+import java.util.Arrays;
+
 
 public class StringArrayComparator implements Comparable<StringArrayComparator> {
 	private String[] vals;
@@ -26,6 +28,11 @@ public class StringArrayComparator implements Comparable<StringArrayComparator> 
 		}
 		if (vals.length == o.length) return 0;
 		return -1;
+	}
+	
+	@Override
+	public String toString(){
+		return Arrays.toString(vals);
 	}
 
 }

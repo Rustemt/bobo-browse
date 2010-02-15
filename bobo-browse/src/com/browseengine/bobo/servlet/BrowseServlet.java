@@ -48,7 +48,6 @@ import com.browseengine.bobo.api.BrowseRequest;
 import com.browseengine.bobo.api.BrowseResult;
 import com.browseengine.bobo.impl.QueryProducer;
 import com.browseengine.bobo.protobuf.BrowseProtobufConverter;
-import com.browseengine.bobo.protobuf.BrowseRequestBPO;
 import com.browseengine.bobo.server.protocol.BoboHttpRequestParam;
 import com.browseengine.bobo.server.protocol.BoboQueryBuilder;
 import com.browseengine.bobo.server.protocol.BoboRequestBuilder;
@@ -56,7 +55,6 @@ import com.browseengine.bobo.server.protocol.BrowseJSONSerializer;
 import com.browseengine.bobo.service.BrowseService;
 import com.browseengine.bobo.service.BrowseServiceFactory;
 import com.browseengine.bobo.util.XStreamDispenser;
-import com.google.protobuf.TextFormat;
 import com.thoughtworks.xstream.XStream;
 
 public class BrowseServlet
@@ -129,7 +127,7 @@ public class BrowseServlet
 		        }
 		      } 
 		      else {
-		        lst[i] = new SortField(part,top);
+		        lst[i] = new SortField(part,SortField.STRING,top);
 		      }
 		    }
 		    return new Sort(lst);

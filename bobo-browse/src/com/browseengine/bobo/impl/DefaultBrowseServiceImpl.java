@@ -56,7 +56,15 @@ public class DefaultBrowseServiceImpl implements BrowseService {
 		BrowseResult result=BrowseService.EMPTY_RESULT;
 		if (req.getOffset() < 0) throw new BrowseException("Invalid offset: "+req.getOffset());
 		if (_reader!=null){
-			BoboBrowser browser=new BoboBrowser(_reader);	
+			BoboBrowser browser;
+			try
+			{
+			  browser = new BoboBrowser(_reader);
+			}
+			catch(IOException e)
+			{
+			  throw new BrowseException("failed to create BoboBrowser", e);
+			}
 			result=browser.browse(req);			
 		}				
 		return result;

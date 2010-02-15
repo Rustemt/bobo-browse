@@ -20,19 +20,22 @@ public abstract class DefaultFacetCountCollector implements FacetCountCollector
 {
   protected final FacetSpec _ospec;
   protected int[] _count;
-  protected final FacetDataCache _dataCache;
+  protected FacetDataCache _dataCache;
   private final String _name;
   protected final BrowseSelection _sel;
   protected final BigSegmentedArray _array;
+  private int _docBase;
   
-  public DefaultFacetCountCollector(BrowseSelection sel,FacetDataCache dataCache,String name,FacetSpec ospec)
+  public DefaultFacetCountCollector(String name,FacetDataCache dataCache,int docBase,
+		  						    BrowseSelection sel,FacetSpec ospec)
   {
       _sel = sel;
       _ospec = ospec;
       _name = name;
-      _dataCache = dataCache;
-      _count = new int[_dataCache.freqs.length];
+	  _dataCache=dataCache;
+	  _count = new int[_dataCache.freqs.length];
       _array = _dataCache.orderArray;
+	  _docBase = docBase;
   }
   
   public String getName()
@@ -100,7 +103,7 @@ public abstract class DefaultFacetCountCollector implements FacetCountCollector
         		  throw new IllegalArgumentException("facet comparator factory not specified");
         	  }
         	  
-        	  Comparator<Integer> comparator = comparatorFactory.newComparator(new FieldValueAccessor(){
+        	  final Comparator<Integer> comparator = comparatorFactory.newComparator(new FieldValueAccessor(){
 
 				public String getFormatedValue(int index) {
 					return _dataCache.valArray.get(index);
@@ -111,19 +114,16 @@ public abstract class DefaultFacetCountCollector implements FacetCountCollector
 				}
         		  
         	  }, _count);
-              facetColl=new LinkedList<BrowseFacet>();    
+              facetColl=new LinkedList<BrowseFacet>();
+              
               BoundedPriorityQueue<Integer> pq=new BoundedPriorityQueue<Integer>(comparator,max);
               
-              for (int i=1;i<_count.length;++i) // exclude zero
+              for (int i=1;i<_count.length;++i)
               {
                 int hits=_count[i];
                 if (hits>=minCount)
                 {
-                  if(!pq.offer(i))
-                  {
-                    // pq is full. we can safely ignore any facet with <=hits.
-                    minCount = hits + 1;
-                  }
+                  pq.offer(i);
                 }
               }
               

@@ -41,9 +41,9 @@ public class FilterTest extends TestCase
     
     try
     {
-      while(filteredIter.next())
+      int doc;
+      while((doc=filteredIter.nextDoc())!=DocIdSetIterator.NO_MORE_DOCS)
       {
-        int doc = filteredIter.doc();
         if (!bs.get(doc)){
           fail("failed: "+doc+" not in expected set");
           return;

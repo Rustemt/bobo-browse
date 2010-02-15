@@ -12,13 +12,13 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Explanation;
-import org.apache.lucene.search.ScoreDocComparator;
 
 import com.browseengine.bobo.api.BoboIndexReader;
 import com.browseengine.bobo.api.BrowseSelection;
 import com.browseengine.bobo.api.FacetSpec;
 import com.browseengine.bobo.api.BoboIndexReader.WorkArea;
 import com.browseengine.bobo.facets.FacetCountCollector;
+import com.browseengine.bobo.facets.FacetCountCollectorSource;
 import com.browseengine.bobo.facets.FacetHandler;
 import com.browseengine.bobo.facets.FacetHandlerFactory;
 import com.browseengine.bobo.facets.data.FacetDataCache;
@@ -33,23 +33,23 @@ import com.browseengine.bobo.facets.filter.RandomAccessNotFilter;
 import com.browseengine.bobo.query.scoring.BoboDocScorer;
 import com.browseengine.bobo.query.scoring.FacetScoreable;
 import com.browseengine.bobo.query.scoring.FacetTermScoringFunctionFactory;
+import com.browseengine.bobo.sort.DocComparatorSource;
 import com.browseengine.bobo.util.BigNestedIntArray;
 
-public class MultiValueFacetHandler extends FacetHandler implements FacetHandlerFactory,FacetScoreable 
+public class MultiValueFacetHandler extends FacetHandler<MultiValueFacetDataCache> implements FacetHandlerFactory<MultiValueFacetHandler>,FacetScoreable 
 {
   private static Logger logger = Logger.getLogger(MultiValueFacetHandler.class);
 
   @Override
-  public ScoreDocComparator getScoreDocComparator() 
+  public DocComparatorSource getDocComparatorSource() 
   {
-    return new MultiValueFacetDataCache.MultiFacetScoreDocComparator(_dataCache);
+    return new MultiValueFacetDataCache.MultiFacetDocComparatorSource(this);
   }
 
   private final TermListFactory _termListFactory;
   private final String _indexFieldName;
 
   private int _maxItems = BigNestedIntArray.MAX_ITEMS;
-  protected MultiValueFacetDataCache _dataCache;
   private Term _sizePayloadTerm;
   protected Set<String> _depends;
   
@@ -64,7 +64,6 @@ public class MultiValueFacetHandler extends FacetHandler implements FacetHandler
     _indexFieldName = (indexFieldName != null ? indexFieldName : name);
     _termListFactory = termListFactory;
     _sizePayloadTerm = sizePayloadTerm;
-    _dataCache = null;
   }
   
   public MultiValueFacetHandler(String name, String indexFieldName, TermListFactory termListFactory, Term sizePayloadTerm)
@@ -102,14 +101,9 @@ public class MultiValueFacetHandler extends FacetHandler implements FacetHandler
     this(name, name, null, null, depends);
   }
 
-  public FacetHandler newInstance()
+  public MultiValueFacetHandler newInstance()
   {
     return new MultiValueFacetHandler(getName(), _indexFieldName, _termListFactory, _sizePayloadTerm, _depends);
-  }
-
-  public final MultiValueFacetDataCache getDataCache()
-  {
-    return _dataCache;
   }
 
   public void setMaxItems(int maxItems)
@@ -118,57 +112,62 @@ public class MultiValueFacetHandler extends FacetHandler implements FacetHandler
   }
 
   @Override
-  public String[] getFieldValues(int id) 
+  public String[] getFieldValues(BoboIndexReader reader,int id) 
   {
-    return _dataCache._nestedArray.getTranslatedData(id, _dataCache.valArray);
+	MultiValueFacetDataCache dataCache = getFacetData(reader);
+    return dataCache._nestedArray.getTranslatedData(id, dataCache.valArray);
   }
   
   @Override
-  public Object[] getRawFieldValues(int id){
-    return new Object[]{_dataCache._nestedArray.getRawData(id, _dataCache.valArray)};
+  public Object[] getRawFieldValues(BoboIndexReader reader,int id){
+
+	MultiValueFacetDataCache dataCache = getFacetData(reader);
+    return new Object[]{dataCache._nestedArray.getRawData(id, dataCache.valArray)};
   }
 
 
   @Override
-  public FacetCountCollector getFacetCountCollector(BrowseSelection sel, FacetSpec ospec)  
-  {
-    return new MultiValueFacetCountCollector(sel, _dataCache, _name, ospec);
+  public FacetCountCollectorSource getFacetCountCollectorSource(final BrowseSelection sel, final FacetSpec ospec){
+	return new FacetCountCollectorSource(){
+
+		@Override
+		public FacetCountCollector getFacetCountCollector(
+				BoboIndexReader reader, int docBase) {
+			MultiValueFacetDataCache dataCache = MultiValueFacetHandler.this.getFacetData(reader);
+			return new MultiValueFacetCountCollector(_name,dataCache,docBase,sel, ospec);
+		}
+	};
+    
   }
 
   @Override
-  public void load(BoboIndexReader reader) throws IOException
+  public MultiValueFacetDataCache load(BoboIndexReader reader) throws IOException
   {
-    load(reader, new WorkArea());
+    return load(reader, new WorkArea());
   }
 
   @Override
-  public void load(BoboIndexReader reader, WorkArea workArea) throws IOException
+  public MultiValueFacetDataCache load(BoboIndexReader reader, WorkArea workArea) throws IOException
   {
-    if(_dataCache == null)
-    {
-      _dataCache = new MultiValueFacetDataCache();
-    }
-
-    _dataCache.setMaxItems(_maxItems);
+	MultiValueFacetDataCache dataCache = new MultiValueFacetDataCache();
+    
+	dataCache.setMaxItems(_maxItems);
 
     if(_sizePayloadTerm == null)
     {
-      _dataCache.load(_indexFieldName, reader, _termListFactory, workArea);
+    	dataCache.load(_indexFieldName, reader, _termListFactory, workArea);
     }
     else
     {
-      _dataCache.load(_indexFieldName, reader, _termListFactory, _sizePayloadTerm);
+    	dataCache.load(_indexFieldName, reader, _termListFactory, _sizePayloadTerm);
     }
+    return dataCache;
   }
 
   @Override
   public RandomAccessFilter buildRandomAccessFilter(String value, Properties prop) throws IOException
   {
-    int index = _dataCache.valArray.indexOf(value);
-    if(index >= 0) 
-      return new MultiValueFacetFilter(_dataCache, index);
-    else 
-      return null;
+    return new MultiValueFacetFilter(this, value);
   }
 
   @Override
@@ -197,15 +196,13 @@ public class MultiValueFacetHandler extends FacetHandler implements FacetHandler
   public RandomAccessFilter buildRandomAccessOrFilter(String[] vals,Properties prop,boolean isNot) throws IOException
   {
     RandomAccessFilter filter = null;
-    
-    int[] indexes = FacetDataCache.convert(_dataCache,vals);
-    if (indexes.length > 1)
+    if (vals.length > 1)
     {
-      filter = new MultiValueORFacetFilter(_dataCache,indexes);
+      filter = new MultiValueORFacetFilter(this,vals,false);			// catch the "not" case later
     }
-    else if(indexes.length == 1)
+    else if(vals.length == 1)
     {
-      filter = new MultiValueFacetFilter(_dataCache,indexes[0]);
+      filter = new MultiValueFacetFilter(this,vals[0]);
     }
     else
     {
@@ -219,9 +216,10 @@ public class MultiValueFacetHandler extends FacetHandler implements FacetHandler
     return filter;
   }
   
-  public BoboDocScorer getDocScorer(FacetTermScoringFunctionFactory scoringFunctionFactory,Map<String,Float> boostMap){
-		float[] boostList = BoboDocScorer.buildBoostList(_dataCache.valArray, boostMap);
-		return new MultiValueDocScorer(_dataCache,scoringFunctionFactory,boostList);
+  public BoboDocScorer getDocScorer(BoboIndexReader reader,FacetTermScoringFunctionFactory scoringFunctionFactory,Map<String,Float> boostMap){
+	    MultiValueFacetDataCache dataCache = getFacetData(reader);
+		float[] boostList = BoboDocScorer.buildBoostList(dataCache.valArray, boostMap);
+		return new MultiValueDocScorer(dataCache,scoringFunctionFactory,boostList);
   }
 
   private static final class MultiValueDocScorer extends BoboDocScorer{
@@ -265,13 +263,14 @@ public class MultiValueFacetHandler extends FacetHandler implements FacetHandler
   private static final class MultiValueFacetCountCollector extends DefaultFacetCountCollector
   {
     private final BigNestedIntArray _array;
-    MultiValueFacetCountCollector(BrowseSelection sel,
-                                  FacetDataCache dataCache,
-                                  String name,
+    MultiValueFacetCountCollector(String name,
+    							  MultiValueFacetDataCache dataCache,
+    							  int docBase,
+    							  BrowseSelection sel,
                                   FacetSpec ospec)
                                   {
-      super(sel,dataCache,name,ospec);
-      _array = ((MultiValueFacetDataCache)(_dataCache))._nestedArray;
+      super(name,dataCache,docBase,sel,ospec);
+      _array = dataCache._nestedArray;
     }
 
     @Override

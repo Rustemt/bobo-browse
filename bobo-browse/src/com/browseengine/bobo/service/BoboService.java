@@ -38,9 +38,9 @@ public class BoboService{
 			browser = new BoboBrowser(_boboReader);
 			return browser.browse(req);
 		}
-		catch(BrowseException be)
+        catch(Exception e)
 		{
-			logger.error(be.getMessage(),be);
+			logger.error(e.getMessage(),e);
 			return new BrowseResult();
 		}
 		finally
@@ -58,7 +58,7 @@ public class BoboService{
 	
 	public void start() throws IOException
 	{
-		IndexReader reader=IndexReader.open(FSDirectory.getDirectory(_idxDir),true);
+		IndexReader reader=IndexReader.open(FSDirectory.open(_idxDir),true);
 		try
 		{
 			_boboReader=BoboIndexReader.getInstance(reader);

@@ -11,22 +11,24 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.lucene.search.ScoreDocComparator;
-
 import com.browseengine.bobo.api.BoboIndexReader;
 import com.browseengine.bobo.api.BrowseFacet;
 import com.browseengine.bobo.api.BrowseSelection;
 import com.browseengine.bobo.api.FacetSpec;
 import com.browseengine.bobo.facets.FacetCountCollector;
-import com.browseengine.bobo.facets.FacetHandler;
+import com.browseengine.bobo.facets.FacetCountCollectorSource;
 import com.browseengine.bobo.facets.FacetHandlerFactory;
+import com.browseengine.bobo.facets.RuntimeFacetHandler;
+import com.browseengine.bobo.facets.FacetHandler.FacetDataNone;
+import com.browseengine.bobo.facets.data.FacetDataCache;
 import com.browseengine.bobo.facets.filter.RandomAccessFilter;
+import com.browseengine.bobo.sort.DocComparatorSource;
 
 /**
  * @author ymatsuda
  *
  */
-public abstract class DynamicRangeFacetHandler extends FacetHandler implements FacetHandlerFactory
+public abstract class DynamicRangeFacetHandler extends RuntimeFacetHandler<FacetDataNone> implements FacetHandlerFactory<DynamicRangeFacetHandler>
 {
   protected final String _dataFacetName;
   protected RangeFacetHandler _dataFacetHandler;
@@ -40,7 +42,7 @@ public abstract class DynamicRangeFacetHandler extends FacetHandler implements F
   protected abstract String buildRangeString(String val);
   protected abstract List<String> buildAllRangeStrings();
   protected abstract String getValueFromRangeString(String rangeString);
-  public abstract FacetHandler newInstance();
+  public abstract DynamicRangeFacetHandler newInstance();
   
   @Override
   public RandomAccessFilter buildRandomAccessFilter(String val, Properties props) throws IOException
@@ -72,35 +74,49 @@ public abstract class DynamicRangeFacetHandler extends FacetHandler implements F
   }
 
   @Override
-  public FacetCountCollector getFacetCountCollector(BrowseSelection sel, FacetSpec fspec)
+  public FacetCountCollectorSource getFacetCountCollectorSource(final BrowseSelection sel, final FacetSpec fspec)
   {
-    List<String> list = buildAllRangeStrings();
-    return new DynamicRangeFacetCountCollector(getName(), _dataFacetHandler, fspec, list);
+    final List<String> list = buildAllRangeStrings();
+    
+    return new FacetCountCollectorSource(){
+		@Override
+		public FacetCountCollector getFacetCountCollector(BoboIndexReader reader, int docBase) {
+		    FacetDataCache dataCache = _dataFacetHandler.getFacetData(reader);
+		    return new DynamicRangeFacetCountCollector(getName(), dataCache, docBase, fspec, list);
+		}
+    };
   }
 
   @Override
-  public String[] getFieldValues(int docid)
+  public String[] getFieldValues(BoboIndexReader reader,int docid)
   {
-    return _dataFacetHandler.getFieldValues(docid);
+    return _dataFacetHandler.getFieldValues(reader,docid);
+  }
+  
+  @Override
+  public Object[] getRawFieldValues(BoboIndexReader reader,int docid)
+  {
+    return _dataFacetHandler.getRawFieldValues(reader,docid);
   }
 
   @Override
-  public ScoreDocComparator getScoreDocComparator()
+  public DocComparatorSource getDocComparatorSource()
   {
-    return _dataFacetHandler.getScoreDocComparator();
+    return _dataFacetHandler.getDocComparatorSource();
   }
 
   @Override
-  public void load(BoboIndexReader reader) throws IOException
+  public FacetDataNone load(BoboIndexReader reader) throws IOException
   {
     _dataFacetHandler = (RangeFacetHandler)getDependedFacetHandler(_dataFacetName);
+    return FacetDataNone.instance;
   }
   
   private class DynamicRangeFacetCountCollector extends RangeFacetCountCollector
   {
-    DynamicRangeFacetCountCollector(String name, RangeFacetHandler handler, FacetSpec fspec, List<String> predefinedList)
+    DynamicRangeFacetCountCollector(String name, FacetDataCache dataCache,int docBase, FacetSpec fspec, List<String> predefinedList)
     {
-      super(name,handler,fspec,predefinedList,false);
+      super(name,dataCache,docBase,fspec,predefinedList);
     }
 
     @Override

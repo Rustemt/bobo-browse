@@ -21,48 +21,41 @@ public abstract class FilteredDocSetIterator extends DocIdSetIterator {
 	
 	abstract protected boolean match(int doc);
 	
-	public final int doc() {
+	public final int docID() {
 		return _currentDoc;
 	}
 
-	public final boolean next() throws IOException{
-		while(_innerIter.next())
+	public final int nextDoc() throws IOException{
+		int docid = _innerIter.nextDoc();
+		while(docid!=DocIdSetIterator.NO_MORE_DOCS)
 		{
-			int doc=_innerIter.doc();
-			if (match(doc))
+			if (match(docid))
 			{
-				_currentDoc=doc;
-				return true;
+				_currentDoc=docid;
+				return docid;
+			}
+			else{
+				docid = _innerIter.nextDoc();
 			}
 		}
-		return false;
+		return DocIdSetIterator.NO_MORE_DOCS;
 	}
 
-	public final boolean skipTo(int n) throws IOException{
-		boolean flag=_innerIter.skipTo(n);
-		if (flag)
+	public final int advance(int n) throws IOException{
+		int docid =_innerIter.advance(n);
+		while (docid!=DocIdSetIterator.NO_MORE_DOCS)
 		{
-			int doc=_innerIter.doc();
-			if (match(doc))
+			if (match(docid))
 			{
-				_currentDoc=doc;
-				return true;
+			  _currentDoc=docid;
+			  return docid;
 			}
 			else
 			{
-			  while(_innerIter.next())
-		      {
-		        int docid=_innerIter.doc();
-		        if (match(docid))
-		        {
-		          _currentDoc=docid;
-		          return true;
-		        }
-		      }
-		      return false;
+			  docid=_innerIter.nextDoc();
 			}
 		}
-		return flag;
+		return DocIdSetIterator.NO_MORE_DOCS;
 	}
 
 }

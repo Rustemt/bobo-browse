@@ -2,28 +2,27 @@ package com.browseengine.bobo.facets.filter;
 
 import java.io.IOException;
 
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.DocIdSetIterator;
 
+import com.browseengine.bobo.api.BoboIndexReader;
 import com.browseengine.bobo.docidset.EmptyDocIdSet;
 import com.browseengine.bobo.docidset.RandomAccessDocIdSet;
-import com.browseengine.bobo.facets.filter.FacetFilter.FacetDocIdSetIterator;
 import com.browseengine.bobo.facets.data.MultiValueFacetDataCache;
+import com.browseengine.bobo.facets.filter.FacetFilter.FacetDocIdSetIterator;
+import com.browseengine.bobo.facets.impl.MultiValueFacetHandler;
 import com.browseengine.bobo.util.BigNestedIntArray;
 
 public class MultiValueFacetFilter extends RandomAccessFilter 
 {
     private static final long serialVersionUID = 1L;
     
-    private final MultiValueFacetDataCache _dataCache;
-    private final BigNestedIntArray _nestedArray;
-    private final int _index;
+    private final MultiValueFacetHandler _facetHandler;
+    private final String _val;
     
-    public MultiValueFacetFilter(MultiValueFacetDataCache dataCache,int index)
+    public MultiValueFacetFilter(MultiValueFacetHandler facetHandler,String val)
     {
-        _dataCache = dataCache;
-        _nestedArray = dataCache._nestedArray;
-        _index = index;
+        _facetHandler = facetHandler;
+        _val = val;
     }
     
     private final static class MultiValueFacetDocIdSetIterator extends FacetDocIdSetIterator
@@ -37,32 +36,35 @@ public class MultiValueFacetFilter extends RandomAccessFilter
         }
         
         @Override
-        final public boolean next() throws IOException {
+        final public int nextDoc() throws IOException {
             while(_doc < _maxID) // not yet reached end
             {
                 if (_nestedArray.contains(++_doc, _index)){
-                    return true;
+                    return _doc;
                 }
             }
-            return false;
+            return DocIdSetIterator.NO_MORE_DOCS;
         }
 
         @Override
-        final public boolean skipTo(int id) throws IOException {
+        final public int advance(int id) throws IOException {
           
           if(id > _doc)
           {
             _doc = id - 1;
-            return next();
+            return nextDoc();
           }
           
-          return next();
+          return nextDoc();
         }
     }
 
     @Override
-    public RandomAccessDocIdSet getRandomAccessDocIdSet(IndexReader reader) throws IOException {
-        if(_index < 0)
+    public RandomAccessDocIdSet getRandomAccessDocIdSet(BoboIndexReader reader) throws IOException {
+    	final MultiValueFacetDataCache dataCache = _facetHandler.getFacetData(reader);
+        final int index = dataCache.valArray.indexOf(_val);
+        final BigNestedIntArray nestedArray = dataCache._nestedArray; 
+        if(index < 0)
         {
             return EmptyDocIdSet.getInstance();
         }
@@ -73,13 +75,13 @@ public class MultiValueFacetFilter extends RandomAccessFilter
                 @Override
                 public DocIdSetIterator iterator() 
                 {
-                    return new MultiValueFacetDocIdSetIterator(_dataCache, _index);
+                    return new MultiValueFacetDocIdSetIterator(dataCache, index);
                 }
-        @Override
-        final public boolean get(int docId)
-        {
-          return _nestedArray.contains(docId, _index);
-        }
+		        @Override
+		        final public boolean get(int docId)
+		        {
+		          return nestedArray.contains(docId, index);
+		        }
                 
             };
         }

@@ -89,7 +89,7 @@ public class BoboLocalClient
   {
     File file = new File("/Users/jwang/dataset/facet_idx_2/beef");
 
-    FSDirectory idxDir = FSDirectory.getDirectory(file);
+    FSDirectory idxDir = FSDirectory.open(file);
     
     IndexReader reader = IndexReader.open(idxDir,true);
     

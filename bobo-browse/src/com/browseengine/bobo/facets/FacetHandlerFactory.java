@@ -1,6 +1,6 @@
 package com.browseengine.bobo.facets;
 
-public interface FacetHandlerFactory
+public interface FacetHandlerFactory<H>
 {
-  FacetHandler newInstance();
+  H newInstance();
 }

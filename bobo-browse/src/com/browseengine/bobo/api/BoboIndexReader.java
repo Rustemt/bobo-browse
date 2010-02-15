@@ -25,9 +25,6 @@
 
 package com.browseengine.bobo.api;
 
-import it.unimi.dsi.fastutil.ints.IntRBTreeSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -37,30 +34,27 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDocComparator;
-import org.apache.lucene.search.SortComparatorSource;
-import org.apache.lucene.search.SortField;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.springframework.context.ApplicationContext;
+import org.apache.lucene.util.ReaderUtil;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
-import com.browseengine.bobo.config.impl.XMLFieldConfigurationBuilder;
 import com.browseengine.bobo.facets.FacetHandler;
-import com.browseengine.bobo.query.FastMatchAllDocsQuery;
-import com.browseengine.bobo.search.LuceneSortDocComparatorFactory;
-import com.browseengine.bobo.search.SortFieldEntry;
 
 /**
  * bobo browse index reader
@@ -68,19 +62,25 @@ import com.browseengine.bobo.search.SortFieldEntry;
  */
 public class BoboIndexReader extends FilterIndexReader
 {
-  private static final String                     FIELD_CONFIG  = "field.xml";
   private static final String                     SPRING_CONFIG = "bobo.spring";
   private static Logger                           logger        = Logger.getLogger(BoboIndexReader.class);
 
-  private Map<String, FacetHandler>               _facetHandlerMap;
+  protected Map<String, FacetHandler<?>>               _facetHandlerMap;
 
-  private Map<SortFieldEntry, ScoreDocComparator> _defaultSortFieldCache;
+  protected Collection<FacetHandler<?>>                _facetHandlers;
 
-  private final Collection<FacetHandler>          _facetHandlers;
-  private final WorkArea                          _workArea;
-  private final IntSet                            _deletedDocs;
-  private volatile int[]                          _deletedDocsArray;
+  protected WorkArea                                _workArea;
 
+  protected IndexReader _srcReader;
+  protected BoboIndexReader[] _subReaders = null;
+  protected int[] _starts = null;
+  
+  private final Map<String,Object> _facetDataMap = new HashMap<String,Object>();
+  private final ThreadLocal<Map<String,Object>> _runtimeFacetDataMap = new ThreadLocal<Map<String,Object>>()
+  {
+    protected Map<String,Object> initialValue() { return new HashMap<String,Object>(); }
+  };
+  
   /**
    * Constructor
    * 
@@ -98,37 +98,120 @@ public class BoboIndexReader extends FilterIndexReader
     return BoboIndexReader.getInstance(reader, null, workArea);
   }
 
-  private static Collection<FacetHandler> loadFromIndex(File file) throws IOException
+  /**
+   * Constructor.
+   * 
+   * @param reader
+   *          index reader
+   * @param facetHandlers
+   *          List of facet handlers
+   * @throws IOException
+   */
+  public static BoboIndexReader getInstance(IndexReader reader,
+                                            Collection<FacetHandler<?>> facetHandlers) throws IOException
+  {
+    return BoboIndexReader.getInstance(reader, facetHandlers, new WorkArea());
+  }
+
+  public static BoboIndexReader getInstance(IndexReader reader,
+                                            Collection<FacetHandler<?>> facetHandlers,
+                                            WorkArea workArea) throws IOException
+  {
+    BoboIndexReader boboReader = new BoboIndexReader(reader, facetHandlers, workArea);
+    boboReader.facetInit();
+    return boboReader;
+  }
+
+  public static BoboIndexReader getInstanceAsSubReader(IndexReader reader) throws IOException
+  {
+    return getInstanceAsSubReader(reader, null, new WorkArea());
+  }
+
+  public static BoboIndexReader getInstanceAsSubReader(IndexReader reader,
+                                                       Collection<FacetHandler<?>> facetHandlers) throws IOException
+  {
+    return getInstanceAsSubReader(reader, facetHandlers, new WorkArea());
+  }
+
+  public static BoboIndexReader getInstanceAsSubReader(IndexReader reader,
+                                                       Collection<FacetHandler<?>> facetHandlers,
+                                                       WorkArea workArea) throws IOException
+  {
+    BoboIndexReader boboReader = new BoboIndexReader(reader, facetHandlers, workArea, false);
+    boboReader.facetInit();
+    return boboReader;
+  }
+  private static Collection<FacetHandler<?>> loadFromIndex(File file) throws IOException
   {
     File springFile = new File(file, SPRING_CONFIG);
     FileSystemXmlApplicationContext appCtx =
         new FileSystemXmlApplicationContext("file:" + springFile.getAbsolutePath());
-    return (Collection<FacetHandler>) appCtx.getBean("handlers");
+    return (Collection<FacetHandler<?>>) appCtx.getBean("handlers");
+  }
+  
+  public IndexReader getInnerReader()
+  {
+    return in;
+  }
+  
+  public Object getFacetData(String name){
+	  return _facetDataMap.get(name);
+  }
+  
+  public Object putFacetData(String name,Object data){
+	  return _facetDataMap.put(name, data);
+  }
+  
+  public Object getRuntimeFacetData(String name)
+  {
+    Map<String,Object> map = _runtimeFacetDataMap.get();
+    if(map == null) return null;
+
+    return map.get(name);
+  }
+
+  public Object putRuntimeFacetData(String name,Object data)
+  {
+    Map<String,Object> map = _runtimeFacetDataMap.get();
+    if(map == null)
+    {
+      map = new HashMap<String,Object>();
+      _runtimeFacetDataMap.set(map);
+    }
+    return map.put(name, data);
+  }
+
+  public void clearRuntimeFacetData()
+  {
+    _runtimeFacetDataMap.set(null);
   }
 
   @Override
   protected void doClose() throws IOException
   {
-    try
-    {
-      super.doClose();
-    }
-    finally
-    {
-      synchronized (_defaultSortFieldCache)
-      {
-        _defaultSortFieldCache.clear();
-      }
-      _facetHandlerMap.clear();
-    }
+	_facetDataMap.clear();
+    if(_srcReader != null) _srcReader.close();
+    super.doClose();
+  }
+  
+  @Override
+  protected void doCommit(Map commitUserData) throws IOException
+  {
+    if(_srcReader != null) _srcReader.flush(commitUserData);
   }
 
+  @Override
+  protected void doDelete(int n) throws  CorruptIndexException, IOException
+  {
+    if(_srcReader != null) _srcReader.deleteDocument(n);
+  }
+  
   private void loadFacetHandler(String name,
                                 Set<String> loaded,
                                 Set<String> visited,
                                 WorkArea workArea) throws IOException
   {
-    FacetHandler facetHandler = _facetHandlerMap.get(name);
+    FacetHandler<?> facetHandler = _facetHandlerMap.get(name);
     if (facetHandler != null && !loaded.contains(name))
     {
       visited.add(name);
@@ -159,7 +242,7 @@ public class BoboIndexReader extends FilterIndexReader
       }
 
       long start = System.currentTimeMillis();
-      facetHandler.load(this, workArea);
+      facetHandler.loadFacetData(this, workArea);
       long end = System.currentTimeMillis();
       if (logger.isDebugEnabled()){
     	StringBuffer buf = new StringBuffer();
@@ -169,39 +252,61 @@ public class BoboIndexReader extends FilterIndexReader
       loaded.add(name);
     }
   }
-
-  private void loadFacetHandlers(WorkArea workArea)
+  
+  private void loadFacetHandlers(WorkArea workArea, Set<String> toBeRemoved)
   {
-    Set<String> facethandlers = _facetHandlerMap.keySet();
-    Iterator<String> iter = facethandlers.iterator();
     Set<String> loaded = new HashSet<String>();
     Set<String> visited = new HashSet<String>();
-    Set<String> tobeRemoved = new HashSet<String>();
 
-    while (iter.hasNext())
+    for(String name : _facetHandlerMap.keySet())
     {
-      String name = iter.next();
       try
       {
         loadFacetHandler(name, loaded, visited, workArea);
       }
       catch (Exception ioe)
       {
-        tobeRemoved.add(name);
+        toBeRemoved.add(name);
         logger.error("facet load failed: " + name + ": " + ioe.getMessage(), ioe);
       }
     }
 
-    iter = tobeRemoved.iterator();
-    while (iter.hasNext())
+    for(String name : toBeRemoved)
     {
-      _facetHandlerMap.remove(iter.next());
+      _facetHandlerMap.remove(name);
     }
   }
 
-  private void initialize(Collection<FacetHandler> facetHandlers, WorkArea workArea) throws IOException
+  private static IndexReader[] createSubReaders(IndexReader reader, WorkArea workArea) throws IOException
   {
-    _facetHandlerMap = new HashMap<String, FacetHandler>();
+    List<IndexReader> readerList = new ArrayList<IndexReader>();
+    ReaderUtil.gatherSubReaders(readerList, reader);
+    IndexReader[] subReaders = (IndexReader[])readerList.toArray(new IndexReader[readerList.size()]);
+    BoboIndexReader[] boboReaders;
+    
+    if(subReaders != null && subReaders.length > 0)
+    {
+      boboReaders = new BoboIndexReader[subReaders.length];
+      for(int i = 0; i < subReaders.length; i++)
+      {
+        boboReaders[i] = new BoboIndexReader(subReaders[i], null, workArea, false);
+      }
+    }
+    else
+    {
+      boboReaders = new BoboIndexReader[]{ new BoboIndexReader(reader, null, workArea, false) };
+    }
+    return boboReaders;
+  }
+  
+  @Override
+  public Directory directory()
+  {
+    return (_subReaders != null ? _subReaders[0].directory() : super.directory());
+  }
+  
+  protected void initialize(Collection<FacetHandler<?>> facetHandlers) throws IOException
+  {
     if (facetHandlers == null) // try to load from index
     {
       Directory idxDir = directory();
@@ -214,125 +319,99 @@ public class BoboIndexReader extends FilterIndexReader
         {
           facetHandlers = loadFromIndex(file);
         }
-        else if (new File(file, FIELD_CONFIG).exists())
-        {
-          facetHandlers =
-              XMLFieldConfigurationBuilder.loadFieldConfiguration(new File(file,
-                                                                           FIELD_CONFIG))
-                                          .getFacetHandlers();
-        }
         else
         {
-          facetHandlers = new ArrayList<FacetHandler>();
+          facetHandlers = new ArrayList<FacetHandler<?>>();
         }
       }
       else
       {
-        facetHandlers = new ArrayList<FacetHandler>();
+        facetHandlers = new ArrayList<FacetHandler<?>>();
       }
     }
-    for (FacetHandler facetHandler : facetHandlers)
+    
+    _facetHandlers = facetHandlers;
+    _facetHandlerMap = new HashMap<String, FacetHandler<?>>();
+    for (FacetHandler<?> facetHandler : facetHandlers)
     {
       _facetHandlerMap.put(facetHandler.getName(), facetHandler);
     }
-    loadFacetHandlers(workArea);
-
-    _defaultSortFieldCache = new HashMap<SortFieldEntry, ScoreDocComparator>();
-  }
-
-  public ScoreDocComparator getDefaultScoreDocComparator(SortField f) throws IOException
-  {
-    int type = f.getType();
-    if (type == SortField.DOC)
-      return ScoreDocComparator.INDEXORDER;
-    if (type == SortField.SCORE)
-      return ScoreDocComparator.RELEVANCE;
-
-    SortComparatorSource factory = f.getFactory();
-    SortFieldEntry entry = factory == null 
-                         ? new SortFieldEntry(f.getField(), type, f.getLocale())
-                         : new SortFieldEntry(f.getField(), factory);
-    ScoreDocComparator comparator = _defaultSortFieldCache.get(entry);
-    if (comparator == null)
-    {
-      synchronized (_defaultSortFieldCache)
-      {
-        comparator = _defaultSortFieldCache.get(entry);
-        if (comparator == null)
-        {
-          comparator = LuceneSortDocComparatorFactory.buildScoreDocComparator(this, entry);
-          if (comparator!=null){
-            _defaultSortFieldCache.put(entry, comparator);
-          }
-        }
-      }
-      return comparator;
-    }
-    else
-    {
-      return comparator;
-    }
-  }
-
-  /**
-   * Constructor.
-   * 
-   * @param reader
-   *          index reader
-   * @param facetHandlers
-   *          List of facet handlers
-   * @throws IOException
-   */
-  public static BoboIndexReader getInstance(IndexReader reader,
-                                            Collection<FacetHandler> facetHandlers) throws IOException
-  {
-    return BoboIndexReader.getInstance(reader, facetHandlers, new WorkArea());
-  }
-
-  public static BoboIndexReader getInstance(IndexReader reader,
-                                            Collection<FacetHandler> facetHandlers,
-                                            WorkArea workArea) throws IOException
-  {
-    BoboIndexReader boboReader = new BoboIndexReader(reader, facetHandlers, workArea);
-    boboReader.facetInit();
-    return boboReader;
   }
 
   protected BoboIndexReader(IndexReader reader,
-                            Collection<FacetHandler> facetHandlers,
+                            Collection<FacetHandler<?>> facetHandlers,
                             WorkArea workArea) throws IOException
   {
-    super(reader);
+    this(reader, facetHandlers, workArea, true);
+    _srcReader = reader;
+  }
+  
+  protected BoboIndexReader(IndexReader reader,
+                            Collection<FacetHandler<?>> facetHandlers,
+                            WorkArea workArea,
+                            boolean useSubReaders) throws IOException
+  {
+    super(useSubReaders ? new MultiReader(createSubReaders(reader, workArea), false) : reader);
+    
+    if(useSubReaders)
+    {
+      BoboIndexReader[] subReaders = (BoboIndexReader[])in.getSequentialSubReaders();
+      if(subReaders != null && subReaders.length > 0)
+      {
+        _subReaders = subReaders;
+        
+        int maxDoc = 0;
+        _starts = new int[_subReaders.length + 1];
+        for (int i = 0; i < _subReaders.length; i++)
+        {
+          if(facetHandlers != null) _subReaders[i].setFacetHandlers(facetHandlers);
+          _starts[i] = maxDoc;
+          maxDoc += _subReaders[i].maxDoc();
+        }
+        _starts[_subReaders.length] = maxDoc;
+      }
+    }
     _facetHandlers = facetHandlers;
     _workArea = workArea;
-    _deletedDocs = new IntRBTreeSet();
-    if(reader.hasDeletions())
+  }
+  
+  protected void facetInit() throws IOException
+  {
+    facetInit(new HashSet<String>());
+  }
+  
+  protected void facetInit(Set<String> toBeRemoved) throws IOException
+  {
+    initialize(_facetHandlers);
+    if(_subReaders == null)
     {
-      int maxDoc = maxDoc();
-      for(int i=0; i < maxDoc; i++)
+      loadFacetHandlers(_workArea, toBeRemoved);  
+    }
+    else
+    {
+      for(BoboIndexReader r : _subReaders)
       {
-        if(reader.isDeleted(i)) _deletedDocs.add(i); 
+        r.facetInit(toBeRemoved);
+      }
+      
+      for(String name : toBeRemoved)
+      {
+        _facetHandlerMap.remove(name);
       }
     }
   }
 
-  protected void facetInit() throws IOException
+  protected void setFacetHandlers(Collection<FacetHandler<?>> facetHandlers)
   {
-    initialize(_facetHandlers, _workArea);
+    _facetHandlers = facetHandlers;
   }
-  
+  /**
+   * @deprecated use {@link org.apache.lucene.search.MatchAllDocsQuery} instead.
+   * @return query that matches all docs in the index
+   */
   public Query getFastMatchAllDocsQuery()
   {
-    int[] deldocs = _deletedDocsArray;
-    if(deldocs == null)
-    {
-      synchronized(_deletedDocs)
-      {
-        deldocs = _deletedDocs.toIntArray();
-        _deletedDocsArray = deldocs;
-      }
-    }
-    return new FastMatchAllDocsQuery(deldocs, maxDoc());
+    return new MatchAllDocsQuery();
   }
 
   /**
@@ -392,54 +471,90 @@ public class BoboIndexReader extends FilterIndexReader
    *          name
    * @return facet handler
    */
-  public FacetHandler getFacetHandler(String fieldname)
+  public FacetHandler<?> getFacetHandler(String fieldname)
   {
     return _facetHandlerMap.get(fieldname);
   }
+  
+  
 
-  /**
+  @Override
+  public IndexReader[] getSequentialSubReaders() {
+	return _subReaders;
+  }
+
+/**
    * Gets the facet handler map
    * 
    * @return facet handler map
    */
-  public Map<String, FacetHandler> getFacetHandlerMap()
+  public Map<String, FacetHandler<?>> getFacetHandlerMap()
   {
     return _facetHandlerMap;
+  }
+  
+  public void rewrap(IndexReader in){
+    if(_subReaders != null)
+    {
+      throw new UnsupportedOperationException("this BoboIndexReader has subreaders");
+    }
+    super.in = in;
   }
 
   @Override
   public Document document(int docid) throws IOException
   {
-    Document doc = super.document(docid);
-    Collection<FacetHandler> facetHandlers = _facetHandlerMap.values();
-    for (FacetHandler facetHandler : facetHandlers)
+    if(_subReaders != null)
     {
-      String[] vals = facetHandler.getFieldValues(docid);
-      if (vals != null)
+      int readerIndex = readerIndex(docid, _starts, _subReaders.length);
+      BoboIndexReader subReader = _subReaders[readerIndex];
+      return subReader.document(docid - _starts[readerIndex]);
+    }
+    else
+    {
+      Document doc = super.document(docid);
+      Collection<FacetHandler<?>> facetHandlers = _facetHandlerMap.values();
+      for (FacetHandler<?> facetHandler : facetHandlers)
       {
-        for (String val : vals)
+        String[] vals = facetHandler.getFieldValues(this,docid);
+        if (vals != null)
         {
-          doc.add(new Field(facetHandler.getName(),
-                            val,
-                            Field.Store.NO,
-                            Field.Index.NOT_ANALYZED));
+          for (String val : vals)
+          {
+            doc.add(new Field(facetHandler.getName(),
+                              val,
+                              Field.Store.NO,
+                              Field.Index.NOT_ANALYZED));
+          }
         }
       }
+      return doc;
     }
-    return doc;
   }
   
-  @Override
-  public void deleteDocument(int docid) throws IOException
+  private static int readerIndex(int n, int[] starts, int numSubReaders)
   {
-    super.deleteDocument(docid);
-    synchronized (_deletedDocs)
+    int lo = 0;
+    int hi = numSubReaders - 1;
+
+    while (hi >= lo)
     {
-      _deletedDocs.add(docid);
-      // remove the array but do not recreate the array at this point
-      // there may be more deleteDocument calls
-      _deletedDocsArray = null;
-    } 
+      int mid = (lo + hi) >>> 1;
+      int midValue = starts[mid];
+      if (n < midValue)
+        hi = mid - 1;
+      else if (n > midValue)
+        lo = mid + 1;
+      else
+      {
+        while (mid+1 < numSubReaders && starts[mid+1] == midValue)
+        {
+          mid++;
+        }
+        return mid;
+      }
+    }
+    return hi;
   }
 
   /**

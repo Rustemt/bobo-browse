@@ -7,14 +7,10 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -29,15 +25,10 @@ import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.params.SolrParams;
 
-import com.browseengine.bobo.api.BrowseFacet;
 import com.browseengine.bobo.api.BrowseHit;
 import com.browseengine.bobo.api.BrowseRequest;
 import com.browseengine.bobo.api.BrowseResult;
 import com.browseengine.bobo.api.FacetAccessible;
-import com.browseengine.bobo.api.FacetSpec;
-import com.browseengine.bobo.api.MappedFacetAccessible;
-import com.browseengine.bobo.impl.SortedFieldBrowseHitComparator;
-import com.browseengine.bobo.protobuf.BrowseResultBPO.FacetContainer;
 import com.browseengine.bobo.server.protocol.BoboRequestBuilder;
 import com.browseengine.bobo.util.ListMerger;
 import com.browseengine.bobo.util.XStreamDispenser;
@@ -145,7 +136,17 @@ public class DispatchUtil {
 		}
         
         Map<String,FacetAccessible> mergedFacetMap = ListMerger.mergeSimpleFacetContainers(facetList,req);
-        Comparator<BrowseHit> comparator = new SortedFieldBrowseHitComparator(req.getSort());
+        Comparator<BrowseHit> comparator = new Comparator<BrowseHit>(){
+        	public int compare(BrowseHit o1, BrowseHit o2) {
+				Comparable c1=o1.getComparable();
+				Comparable c2=o2.getComparable();
+				if (c1==null || c2==null){
+					return o2.getDocid() - o1.getDocid();
+				}
+				return c1.compareTo(c2);
+			}
+        	
+        };
         
         ArrayList<BrowseHit> mergedList = ListMerger.mergeLists(req.getOffset(), req.getCount(), iteratorList.toArray(new Iterator[iteratorList.size()]), comparator);
         BrowseHit[] hits = mergedList.toArray(new BrowseHit[mergedList.size()]);

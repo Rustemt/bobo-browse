@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import proj.zoie.api.IndexReaderFactory;
+import proj.zoie.api.ZoieIndexReader;
 
 import com.browseengine.bobo.api.BoboBrowser;
 import com.browseengine.bobo.api.BoboIndexReader;
@@ -22,22 +23,25 @@ import com.browseengine.bobo.service.BrowseService;
 import com.browseengine.bobo.service.SerializedFacetAccessible;
 
 public class BoboBrowseServiceImpl implements BrowseService {
-    private final IndexReaderFactory<BoboIndexReader> _indexReaderFactory;
+    private final IndexReaderFactory<ZoieIndexReader<BoboIndexReader>> _indexReaderFactory;
     
-	public BoboBrowseServiceImpl(IndexReaderFactory<BoboIndexReader> indexReaderFactory)
+	public BoboBrowseServiceImpl(IndexReaderFactory<ZoieIndexReader<BoboIndexReader>> indexReaderFactory)
 	{
 		_indexReaderFactory=indexReaderFactory;
 	}
 	
 	private Browsable buildBrowsable() throws IOException
 	{
-		List<BoboIndexReader> readerList = _indexReaderFactory.getIndexReaders();
+		List<ZoieIndexReader<BoboIndexReader>> readerList = _indexReaderFactory.getIndexReaders();
 		
-		ArrayList<Browsable> subBrowsableList = new ArrayList<Browsable>(readerList.size());
+		ArrayList<Browsable> subBrowsableList = new ArrayList<Browsable>();
 		
-		for (BoboIndexReader reader : readerList)
+		for (ZoieIndexReader<BoboIndexReader> reader : readerList)
 		{
-			subBrowsableList.add(new BoboBrowser(reader));
+			List<BoboIndexReader> boboReaders = reader.getDecoratedReaders();
+			for (BoboIndexReader boboReader : boboReaders){
+			  subBrowsableList.add(new BoboBrowser(boboReader));
+			}
 		}
 		
 		MultiBoboBrowser multiBrowser = new MultiBoboBrowser(subBrowsableList.toArray(new Browsable[subBrowsableList.size()]));

@@ -93,7 +93,7 @@ public class PropertyFileDataProvider extends StreamDataProvider<PropertiesData>
   }
 
   @Override
-  protected void reset()
+  public void reset()
   {
     _currentID = 0;
     _currentVersion = 0;

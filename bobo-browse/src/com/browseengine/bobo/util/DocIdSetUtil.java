@@ -15,7 +15,8 @@ public class DocIdSetUtil
     StringBuffer buf = new StringBuffer();
     boolean firstTime = true;
     buf.append("[");
-    while(iter.next())
+    int docid;
+    while((docid=iter.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS)
     {
       if (firstTime)
       {
@@ -25,7 +26,7 @@ public class DocIdSetUtil
       {
         buf.append(",");
       }
-      buf.append(iter.doc());
+      buf.append(docid);
     }
     buf.append("]");
     return buf.toString();

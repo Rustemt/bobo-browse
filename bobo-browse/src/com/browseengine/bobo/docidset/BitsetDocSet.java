@@ -40,20 +40,18 @@ public class BitsetDocSet extends DocIdSet {
 		}
 		
 		@Override
-		public int doc() {
+		public int docID() {
 			return _current;
 		}
 
 		@Override
-		public boolean next() throws IOException {
-			_current=_bs.nextSetBit(_current+1);
-			return _current!=-1;
+		public int nextDoc() throws IOException {
+			return _bs.nextSetBit(_current+1);
 		}
 
 		@Override
-		public boolean skipTo(int target) throws IOException {
-			_current=_bs.nextSetBit(target);
-			return _current!=-1;
+		public int advance(int target) throws IOException {
+			return _bs.nextSetBit(target);
 		}
 		
 	}

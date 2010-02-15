@@ -11,10 +11,12 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.ScoreDocComparator;
-import org.apache.lucene.search.SortField;
 
+import com.browseengine.bobo.api.BoboIndexReader;
+import com.browseengine.bobo.facets.FacetHandler;
 import com.browseengine.bobo.facets.FacetHandler.TermCountSize;
+import com.browseengine.bobo.sort.DocComparator;
+import com.browseengine.bobo.sort.DocComparatorSource;
 import com.browseengine.bobo.util.BigByteArray;
 import com.browseengine.bobo.util.BigIntArray;
 import com.browseengine.bobo.util.BigSegmentedArray;
@@ -162,36 +164,33 @@ public class FacetDataCache implements Serializable {
 	    return list.toIntArray();
 	}
 	
-	public ScoreDocComparator getScoreDocComparator()
-	{
-		return new FacetScoreDocComparator(this);
-	}
-	
-	public static class FacetScoreDocComparator implements ScoreDocComparator{
-		private FacetDataCache _dataCache;
-		private BigSegmentedArray orderArray;
-		public FacetScoreDocComparator(FacetDataCache dataCache){
-			_dataCache=dataCache;
-			orderArray=_dataCache.orderArray;
+	public static class FacetDocComparatorSource extends DocComparatorSource{
+		private FacetHandler<FacetDataCache> _facetHandler;
+		public FacetDocComparatorSource(FacetHandler<FacetDataCache> facetHandler){
+			_facetHandler = facetHandler;
 		}
-		public int compare(ScoreDoc i, ScoreDoc j) {
-			return orderArray.get(i.doc) - orderArray.get(j.doc);
+		
+		@Override
+		public DocComparator getComparator(IndexReader reader, int docbase)
+				throws IOException {
+			if (!(reader instanceof BoboIndexReader)) throw new IllegalStateException("reader not instance of "+BoboIndexReader.class);
+			BoboIndexReader boboReader = (BoboIndexReader)reader;
+			final FacetDataCache dataCache = _facetHandler.getFacetData(boboReader);
+			final BigSegmentedArray orderArray = dataCache.orderArray;
+			return new DocComparator() {
+				
+				@Override
+				public Comparable value(ScoreDoc doc) {
+					int index = orderArray.get(doc.doc);
+			        return dataCache.valArray.get(index);
+				}
+				
+				@Override
+				public int compare(ScoreDoc doc1, ScoreDoc doc2) {
+					return orderArray.get(doc1.doc) - orderArray.get(doc2.doc);	
+				}
+			};
 		}
-
-		public int sortType() {
-			return SortField.STRING;
-		}
-
-		public Comparable sortValue(ScoreDoc i) {
-          int index = orderArray.get(i.doc);
-          return _dataCache.valArray.get(index);
-		}
-	}
-	
-	public static void main(String[] args) {
-		System.out.println("byte: "+Byte.MAX_VALUE);
-		System.out.println("short: "+Short.MAX_VALUE);
-		System.out.println("int: "+Integer.MAX_VALUE);
 	}
 }
 

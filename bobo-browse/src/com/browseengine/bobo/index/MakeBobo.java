@@ -147,7 +147,7 @@ public class MakeBobo {
     		} 	
     		
     		
-        	BoboIndexer indexer=new BoboIndexer(digester,FSDirectory.getDirectory(output,true));
+        	BoboIndexer indexer=new BoboIndexer(digester,FSDirectory.open(new File(output)));
         	indexer.index();
 	    }
 	    catch( ParseException exp ) {

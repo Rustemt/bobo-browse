@@ -34,6 +34,7 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.store.FSDirectory;
 
 import com.browseengine.bobo.index.digest.FileDigester;
 
@@ -89,14 +90,14 @@ public class CarDataDigest extends FileDigester {
 	private static void makeCar(Document car,Document doc)
 	{
 
-		car.add(new Field("color", doc.get("color"),Store.YES, Index.UN_TOKENIZED));
+		car.add(new Field("color", doc.get("color"),Store.YES, Index.NOT_ANALYZED));
 
-		car.add(new Field("category", doc.get("category"),Store.YES, Index.UN_TOKENIZED));
-		car.add(new Field("city", doc.get("city"),Store.YES, Index.UN_TOKENIZED));
-		car.add(new Field("makemodel", doc.get("makemodel"),Store.YES, Index.UN_TOKENIZED));
-		car.add(new Field("price", doc.get("price"),Store.YES, Index.UN_TOKENIZED));
-		car.add(new Field("year", doc.get("year"),Store.YES, Index.UN_TOKENIZED));
-		car.add(new Field("mileage", doc.get("mileage"),Store.YES, Index.UN_TOKENIZED));
+		car.add(new Field("category", doc.get("category"),Store.YES, Index.NOT_ANALYZED));
+		car.add(new Field("city", doc.get("city"),Store.YES, Index.NOT_ANALYZED));
+		car.add(new Field("makemodel", doc.get("makemodel"),Store.YES, Index.NOT_ANALYZED));
+		car.add(new Field("price", doc.get("price"),Store.YES, Index.NOT_ANALYZED));
+		car.add(new Field("year", doc.get("year"),Store.YES, Index.NOT_ANALYZED));
+		car.add(new Field("mileage", doc.get("mileage"),Store.YES, Index.NOT_ANALYZED));
 	}
 
 	private static void makeCar(Document car,String carLine)
@@ -118,13 +119,13 @@ public class CarDataDigest extends FileDigester {
 		String price=""+(rand.nextInt(174)+21)*100;
 		String mileage=""+(rand.nextInt(80)+101)*100;
 		
-		car.add(new Field("color", color,Store.YES, Index.UN_TOKENIZED));
-		car.add(new Field("category", category,Store.YES, Index.UN_TOKENIZED));
-		car.add(new Field("city", city,Store.YES, Index.UN_TOKENIZED));
-		car.add(new Field("makemodel", make,Store.YES, Index.UN_TOKENIZED));
-		car.add(new Field("price", price,Store.YES, Index.UN_TOKENIZED));
-		car.add(new Field("year", year,Store.YES, Index.UN_TOKENIZED));
-		car.add(new Field("mileage", mileage,Store.YES, Index.UN_TOKENIZED));		
+		car.add(new Field("color", color,Store.YES, Index.NOT_ANALYZED));
+		car.add(new Field("category", category,Store.YES, Index.NOT_ANALYZED));
+		car.add(new Field("city", city,Store.YES, Index.NOT_ANALYZED));
+		car.add(new Field("makemodel", make,Store.YES, Index.NOT_ANALYZED));
+		car.add(new Field("price", price,Store.YES, Index.NOT_ANALYZED));
+		car.add(new Field("year", year,Store.YES, Index.NOT_ANALYZED));
+		car.add(new Field("mileage", mileage,Store.YES, Index.NOT_ANALYZED));		
 	}
 	
 	public CarDataDigest(File file) {
@@ -137,7 +138,7 @@ public class CarDataDigest extends FileDigester {
 				
 		IndexReader reader=null;
 		try{
-			reader=IndexReader.open(getDataFile());
+			reader=IndexReader.open(FSDirectory.open(getDataFile()),true);
 			int carcount=reader.maxDoc();
 			
 			Document[] docCache=new Document[carcount];

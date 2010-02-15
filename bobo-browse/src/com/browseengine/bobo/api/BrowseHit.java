@@ -62,17 +62,17 @@ public class BrowseHit
 	private int docid;
 	
 	private Map<String,String[]> _fieldValues;
-	private Map<String,Comparable<?>> _comparableMap = new HashMap<String,Comparable<?>>();
+	private Comparable<?> _comparable;
 	private Document _storedFields;
 	
-	public void addComparable(String field,Comparable<?> comparable)
+	public void setComparable(Comparable<?> comparable)
 	{
-	  _comparableMap.put(field, comparable);
+	  _comparable = comparable;
 	}
 	
-	public Comparable<?> getComparable(String field)
+	public Comparable<?> getComparable()
 	{
-	  return _comparableMap.get(field);
+	  return _comparable;
 	}
 	
 	/**

@@ -61,7 +61,7 @@ public class CarDigester extends FileDigester {
 					if (format!=null){
 						vals[i]=format.format(Double.parseDouble(vals[i]));
 					}
-					doc.add(new Field(name,vals[i],Field.Store.NO,Field.Index.UN_TOKENIZED,Field.TermVector.NO));
+					doc.add(new Field(name,vals[i],Field.Store.NO,Field.Index.NOT_ANALYZED,Field.TermVector.NO));
 				}
 			}	
 		}

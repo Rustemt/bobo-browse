@@ -6,6 +6,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.Filter;
 
+import com.browseengine.bobo.api.BoboIndexReader;
 import com.browseengine.bobo.docidset.RandomAccessDocIdSet;
 
 public abstract class RandomAccessFilter extends Filter
@@ -15,8 +16,13 @@ public abstract class RandomAccessFilter extends Filter
   @Override 
   public DocIdSet getDocIdSet(IndexReader reader) throws IOException
   {
-    return getRandomAccessDocIdSet(reader);
+	if (reader instanceof BoboIndexReader){
+      return getRandomAccessDocIdSet((BoboIndexReader)reader);
+	}
+	else{
+	  throw new IllegalStateException("reader not instance of "+BoboIndexReader.class);
+	}
   }
   
-  public abstract RandomAccessDocIdSet getRandomAccessDocIdSet(IndexReader reader) throws IOException;
+  public abstract RandomAccessDocIdSet getRandomAccessDocIdSet(BoboIndexReader reader) throws IOException;
 }
