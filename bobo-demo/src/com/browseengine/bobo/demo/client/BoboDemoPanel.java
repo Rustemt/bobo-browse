@@ -1,6 +1,5 @@
 package com.browseengine.bobo.demo.client;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,9 +16,10 @@ import com.browseengine.bobo.gwt.widgets.CheckBoxFacetView;
 import com.browseengine.bobo.gwt.widgets.FacetSelectionListener;
 import com.browseengine.bobo.gwt.widgets.FacetValue;
 import com.browseengine.bobo.gwt.widgets.FacetValueSelectionEvent;
-import com.browseengine.bobo.gwt.widgets.TagCloudFacetView;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.SpanElement;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Window;
@@ -40,10 +40,15 @@ public class BoboDemoPanel extends Composite implements FacetSelectionListener{
     @UiField CheckBoxFacetView colorView;
     //@UiField TagCloudFacetView tagsView;
     @UiField CheckBoxFacetView categoryView;
+    @UiField CheckBoxFacetView priceView;
+    @UiField CheckBoxFacetView mileageView;
+    @UiField CheckBoxFacetView yearView;
+    
     @UiField TextBox queryInput;
     @UiField SpanElement hitcountLabel;
     @UiField SpanElement searchtimeLabel;
     @UiField Button searchButton;
+    @UiField Button clearButton;
     
     public BoboDemoPanel(BoboSearchServiceAsync searchSvc) {
     	_searchSvc = searchSvc;
@@ -52,13 +57,33 @@ public class BoboDemoPanel extends Composite implements FacetSelectionListener{
     	
     	BoboFacetSpec colorSpec = new BoboFacetSpec();
     	colorSpec.setMax(10);
+    	colorSpec.setMinCount(1);
     	colorSpec.setExpandSelection(true);
     	colorSpec.setOrderByHits(true);
     	
     	BoboFacetSpec categorySpec = new BoboFacetSpec();
     	categorySpec.setMax(10);
+    	categorySpec.setMinCount(1);
     	categorySpec.setExpandSelection(true);
     	categorySpec.setOrderByHits(true);
+    	
+    	BoboFacetSpec priceSpec = new BoboFacetSpec();
+    	priceSpec.setMax(10);
+    	priceSpec.setMinCount(1);
+    	priceSpec.setExpandSelection(true);
+    	priceSpec.setOrderByHits(true);
+    	
+    	BoboFacetSpec mielageSpec = new BoboFacetSpec();
+    	mielageSpec.setMax(10);
+    	mielageSpec.setMinCount(1);
+    	mielageSpec.setExpandSelection(true);
+    	mielageSpec.setOrderByHits(true);
+    	
+    	BoboFacetSpec yearSpec = new BoboFacetSpec();
+    	yearSpec.setMax(10);
+    	yearSpec.setMinCount(1);
+    	yearSpec.setExpandSelection(true);
+    	yearSpec.setOrderByHits(true);
     	
     	
     	initWidget(uiBinder.createAndBindUi(this));
@@ -69,11 +94,47 @@ public class BoboDemoPanel extends Composite implements FacetSelectionListener{
     	categoryView.addFacetSelectionListener(this);
     	facetSpecMap.put(categoryView.getName(), categorySpec);
     	
+    	priceView.addFacetSelectionListener(this);
+    	facetSpecMap.put(priceView.getName(), categorySpec);
+    	
+    	mileageView.addFacetSelectionListener(this);
+    	facetSpecMap.put(mileageView.getName(), categorySpec);
+    	
+    	yearView.addFacetSelectionListener(this);
+    	facetSpecMap.put(yearView.getName(), categorySpec);
+    	
     	_req.setFacetSpecMap(facetSpecMap);
     	
     	_viewMap = new HashMap<String,AbstractFacetView>();
     	_viewMap.put(colorView.getName(), colorView);
     	_viewMap.put(categoryView.getName(), categoryView);
+    	_viewMap.put(priceView.getName(), priceView);
+    	_viewMap.put(mileageView.getName(), mileageView);
+    	_viewMap.put(yearView.getName(), yearView);
+    	
+    	searchButton.addClickHandler(new ClickHandler() {
+			
+			public void onClick(ClickEvent event) {
+				String q = queryInput.getText();
+				if ("".equals(q)){
+					q=null;
+				}
+				_req.setQuery(q);
+				executeSearch();
+			}
+		});
+    	
+    	clearButton.addClickHandler(new ClickHandler() {
+			
+			public void onClick(ClickEvent event) {
+				Map<String,BoboSelection> selMap = _req.getSelections();
+				if (selMap!=null){
+					selMap.clear();
+				}
+				_req.setQuery(null);
+				executeSearch();
+			}
+		});
     	
        // tagsView.addFacetSelectionListener(this);
        // tagsView.updateSelections(list,null);

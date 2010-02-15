@@ -37,5 +37,6 @@
 	<classpathentry kind="lib" path="lib/solr/solr-solrj.jar"/>
 	<classpathentry kind="lib" path="lib/gui/gwt-user.jar"/>
 	<classpathentry kind="lib" path="lib/gui/gwt-visualization.jar"/>
+	<classpathentry kind="lib" path="lib/master/ant.jar"/>
 	<classpathentry kind="output" path="output"/>
 </classpath>
