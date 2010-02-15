@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="bobo-bench/src"/>
+	<classpathentry kind="src" path="bobo-demo/src"/>
+	<classpathentry kind="src" path="bobo-gwt/src"/>
 	<classpathentry kind="src" path="bobo-perf/src"/>
 	<classpathentry kind="src" path="bobo-tools/src"/>
 	<classpathentry kind="src" path="bobo-solr/src"/>
@@ -8,7 +10,6 @@
 	<classpathentry kind="src" path="bobo-service/src"/>
 	<classpathentry kind="src" path="test/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/master/ant.jar"/>
 	<classpathentry kind="lib" path="lib/master/commons-cli.jar"/>
 	<classpathentry kind="lib" path="lib/master/commons-collections.jar"/>
 	<classpathentry kind="lib" path="lib/master/commons-digester.jar"/>
@@ -34,5 +35,7 @@
 	<classpathentry kind="lib" path="lib/master/commons-lang.jar"/>
 	<classpathentry kind="lib" path="lib/solr/solr-core.jar"/>
 	<classpathentry kind="lib" path="lib/solr/solr-solrj.jar"/>
+	<classpathentry kind="lib" path="lib/gui/gwt-user.jar"/>
+	<classpathentry kind="lib" path="lib/gui/gwt-visualization.jar"/>
 	<classpathentry kind="output" path="output"/>
 </classpath>
