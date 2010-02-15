@@ -1,5 +1,6 @@
 package com.browseengine.bobo.gwt.svc;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +23,13 @@ public class BoboSelection implements IsSerializable {
 
 	public List<String> getValues() {
 		return values;
+	}
+	
+	public void addValue(String val){
+		if (this.values==null){
+			this.values = new LinkedList<String>();
+		}
+		this.values.add(val);
 	}
 
 	public void setValues(List<String> values) {

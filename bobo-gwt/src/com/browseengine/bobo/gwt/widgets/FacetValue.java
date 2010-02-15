@@ -6,8 +6,15 @@ import com.google.gwt.user.client.ui.Label;
 public class FacetValue implements IsSerializable{
 	private String _value;
 	private int _count;
-	
-	
+	private boolean _selected;
+
+	public boolean isSelected() {
+		return _selected;
+	}
+
+	public void setSelected(boolean selected) {
+		_selected = selected;
+	}
 
 	public void setValue(String value) {
 		_value = value;
@@ -21,7 +28,7 @@ public class FacetValue implements IsSerializable{
 		return _value;
 	}
 	
-	public int getHitcount(){
+	public int getCount(){
 		return _count;
 	}
 	

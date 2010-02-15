@@ -1,7 +1,6 @@
 package com.browseengine.bobo.gwt.widgets;
 
 import java.util.List;
-import java.util.Set;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -9,7 +8,6 @@ import com.google.gwt.uibinder.client.UiConstructor;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 public class CheckBoxFacetView extends AbstractFacetView implements ClickHandler {
     private final VerticalPanel _panel;
@@ -44,7 +42,7 @@ public class CheckBoxFacetView extends AbstractFacetView implements ClickHandler
 	}
 
 	@Override
-	public void updateSelections(List<FacetValue> selections,Set<String> selected){
+	public void updateSelections(List<FacetValue> selections){
 		_panel.clear();
 		_panel.add(_clearSel);
 		_counter = 0;
@@ -54,8 +52,9 @@ public class CheckBoxFacetView extends AbstractFacetView implements ClickHandler
 				sel.setStyleName(getBoboStyleName(FACET_VALUE_STYLE));
 				sel.setName(_name);
 				String val = facet.getValue();
-				if (selected!=null && selected.contains(val)){
+				if (facet.isSelected()){
 					_counter++;
+					sel.setValue(true);
 				}
 				sel.setFormValue(val);
 				sel.setText(String.valueOf(facet));
@@ -70,13 +69,6 @@ public class CheckBoxFacetView extends AbstractFacetView implements ClickHandler
 	public void onClick(ClickEvent event) {
 		Object src = event.getSource();
 		if (src==_clearSel){
-		  int wcount = _panel.getWidgetCount();
-		  for (int i=0;i<wcount;++i){
-			Widget w = _panel.getWidget(i);
-			if (w!=_clearSel && w instanceof CheckBox){
-				((CheckBox)w).setValue(false);
-			}
-		  }
 		  fireFacetSelectionClearedEvent();
 		}
 		else{
@@ -84,13 +76,6 @@ public class CheckBoxFacetView extends AbstractFacetView implements ClickHandler
 			CheckBox sel = (CheckBox)src;
 			String facetVal = sel.getFormValue();
 			boolean checked = sel.getValue();
-			if (checked){
-				_counter++;
-			}
-			else{
-				_counter--;
-			}
-			_clearSel.setValue(_counter == 0);
             fireFacetSelectionEvent(facetVal, checked);
 		  }
 		}

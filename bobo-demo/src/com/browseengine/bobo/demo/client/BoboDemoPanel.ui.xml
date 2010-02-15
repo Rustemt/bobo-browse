@@ -4,8 +4,23 @@
 	<g:HTMLPanel>
 	    <LINK href="search.css" rel="stylesheet" type="text/css"/>
 		<center>
-			<bobo:CheckBoxFacetView ui:field='colorView' name='color'/>
-			<bobo:TagCloudFacetView ui:field='tagsView' name='tags'/>
+		    <g:TextBox ui:field='queryInput' maxLength='512' visibleLength='25'/>
+		    hits: <span ui:field="hitcountLabel"></span>
+				(<span ui:field="searchtimeLabel"></span> ms)
+			<g:Button ui:field='searchButton' text='Search'/>
+			<table width="100%" border="1">
+			  <tr>
+			    <td>
+			      <bobo:CheckBoxFacetView ui:field='colorView' name='color'/>
+			    </td>
+			    <td>
+			      <bobo:CheckBoxFacetView ui:field='categoryView' name='category'/>
+			    </td>
+			  </tr>
+			  <!-- 
+			  <bobo:TagCloudFacetView ui:field='tagsView' name='tags'/>
+			   -->
+			</table>
 		</center>
 	</g:HTMLPanel>
 </ui:UiBinder>

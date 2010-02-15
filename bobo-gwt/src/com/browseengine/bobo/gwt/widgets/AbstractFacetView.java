@@ -52,5 +52,5 @@ public abstract class AbstractFacetView extends Composite{
 		}
 	}
 	
-	abstract public void updateSelections(List<FacetValue> selections,Set<String> selected);
+	abstract public void updateSelections(List<FacetValue> selections);
 }

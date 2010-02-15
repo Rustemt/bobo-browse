@@ -19,11 +19,14 @@ import com.browseengine.bobo.gwt.widgets.FacetValue;
 import com.browseengine.bobo.gwt.widgets.FacetValueSelectionEvent;
 import com.browseengine.bobo.gwt.widgets.TagCloudFacetView;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
 public class BoboDemoPanel extends Composite implements FacetSelectionListener{
@@ -35,26 +38,42 @@ public class BoboDemoPanel extends Composite implements FacetSelectionListener{
     private final Map<String,AbstractFacetView> _viewMap;
 
     @UiField CheckBoxFacetView colorView;
-    @UiField TagCloudFacetView tagsView;
+    //@UiField TagCloudFacetView tagsView;
+    @UiField CheckBoxFacetView categoryView;
+    @UiField TextBox queryInput;
+    @UiField SpanElement hitcountLabel;
+    @UiField SpanElement searchtimeLabel;
+    @UiField Button searchButton;
     
     public BoboDemoPanel(BoboSearchServiceAsync searchSvc) {
     	_searchSvc = searchSvc;
     	_req = new BoboRequest();
     	Map<String,BoboFacetSpec> facetSpecMap = new HashMap<String,BoboFacetSpec>();
+    	
     	BoboFacetSpec colorSpec = new BoboFacetSpec();
     	colorSpec.setMax(10);
     	colorSpec.setExpandSelection(true);
     	colorSpec.setOrderByHits(true);
+    	
+    	BoboFacetSpec categorySpec = new BoboFacetSpec();
+    	categorySpec.setMax(10);
+    	categorySpec.setExpandSelection(true);
+    	categorySpec.setOrderByHits(true);
     	
     	
     	initWidget(uiBinder.createAndBindUi(this));
     	
     	colorView.addFacetSelectionListener(this);
     	facetSpecMap.put(colorView.getName(), colorSpec);
+    	
+    	categoryView.addFacetSelectionListener(this);
+    	facetSpecMap.put(categoryView.getName(), categorySpec);
+    	
     	_req.setFacetSpecMap(facetSpecMap);
     	
     	_viewMap = new HashMap<String,AbstractFacetView>();
     	_viewMap.put(colorView.getName(), colorView);
+    	_viewMap.put(categoryView.getName(), categoryView);
     	
        // tagsView.addFacetSelectionListener(this);
        // tagsView.updateSelections(list,null);
@@ -78,8 +97,9 @@ public class BoboDemoPanel extends Composite implements FacetSelectionListener{
 		if (sel==null){
 			sel = new BoboSelection();
 			selMap.put(name, sel);
+
 		}
-		sel.setValues(Arrays.asList(event.getFacetValue()));
+		sel.addValue(event.getFacetValue());	
 		
 		executeSearch();
 	}
@@ -110,13 +130,18 @@ public class BoboDemoPanel extends Composite implements FacetSelectionListener{
 	}
 	
 	void refreshViews(BoboResult res){
+		int numDocs = res.getNumHits();
+		int totalDocs = res.getTotalDocs();
+		hitcountLabel.setInnerHTML(numDocs+" / "+totalDocs);
+		searchtimeLabel.setInnerHTML(String.valueOf(res.getTime()));
+		
 		Map<String,List<FacetValue>> valMap = res.getFacetResults();
 		Set<Entry<String,List<FacetValue>>> entrySet = valMap.entrySet();
 		for (Entry<String,List<FacetValue>> entry : entrySet){
 			String facetName = entry.getKey();
 			AbstractFacetView view = _viewMap.get(facetName);
 			if (view!=null){
-			  view.updateSelections(entry.getValue(), null);
+			  view.updateSelections(entry.getValue());
 			}
 		}
 	}

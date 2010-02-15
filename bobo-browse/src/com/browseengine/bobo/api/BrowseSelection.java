@@ -27,6 +27,7 @@ package com.browseengine.bobo.api;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Properties;
 
 import com.browseengine.bobo.facets.impl.PathFacetHandler;
@@ -60,6 +61,10 @@ public class BrowseSelection implements Serializable{
 	
 	public void setSelectionProperty(String key,String val){
 		_selectionProperties.setProperty(key, val);
+	}
+	
+	public void setSelectionProperties(Map<String,String> props){
+		_selectionProperties.putAll(props);
 	}
 	
 	/**
