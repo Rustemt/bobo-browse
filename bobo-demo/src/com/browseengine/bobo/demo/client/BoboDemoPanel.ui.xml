@@ -31,6 +31,12 @@
 		  <!-- 
 		  <bobo:TagCloudFacetView ui:field='tagsView' name='tags'/>
 		   -->
+		   <tr>
+		   <td colspan="5">
+		     <bobo:ResultTableView ui:field='resultsView' fieldNames='color,category,price,mileage,year' /> 
+		   </td>
+		   </tr>
 		</table>
+		
 	</g:HTMLPanel>
 </ui:UiBinder>

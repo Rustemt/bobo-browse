@@ -16,6 +16,7 @@ import com.browseengine.bobo.gwt.widgets.CheckBoxFacetView;
 import com.browseengine.bobo.gwt.widgets.FacetSelectionListener;
 import com.browseengine.bobo.gwt.widgets.FacetValue;
 import com.browseengine.bobo.gwt.widgets.FacetValueSelectionEvent;
+import com.browseengine.bobo.gwt.widgets.ResultTableView;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -43,6 +44,7 @@ public class BoboDemoPanel extends Composite implements FacetSelectionListener{
     @UiField CheckBoxFacetView priceView;
     @UiField CheckBoxFacetView mileageView;
     @UiField CheckBoxFacetView yearView;
+    @UiField ResultTableView resultsView;
     
     @UiField TextBox queryInput;
     @UiField SpanElement hitcountLabel;
@@ -53,6 +55,8 @@ public class BoboDemoPanel extends Composite implements FacetSelectionListener{
     public BoboDemoPanel(BoboSearchServiceAsync searchSvc) {
     	_searchSvc = searchSvc;
     	_req = new BoboRequest();
+    	_req.setCount(10);
+    	_req.setOffset(0);
     	Map<String,BoboFacetSpec> facetSpecMap = new HashMap<String,BoboFacetSpec>();
     	
     	BoboFacetSpec colorSpec = new BoboFacetSpec();
@@ -187,6 +191,7 @@ public class BoboDemoPanel extends Composite implements FacetSelectionListener{
 		if (selMap!=null){
 			selMap.remove(view.getName());
 		}
+		_req.setOffset(0);
 		executeSearch();
 	}
 	
@@ -205,6 +210,7 @@ public class BoboDemoPanel extends Composite implements FacetSelectionListener{
 			  view.updateSelections(entry.getValue());
 			}
 		}
+		resultsView.updateResults(res.getHits());
 	}
 	
 	private void executeSearch(){
