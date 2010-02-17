@@ -29,6 +29,8 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.visualization.client.VisualizationUtils;
+import com.google.gwt.visualization.client.visualizations.Table;
 
 public class BoboDemoPanel extends Composite implements FacetSelectionListener{
     interface MyUiBinder extends UiBinder<Widget, BoboDemoPanel> {}
@@ -142,10 +144,15 @@ public class BoboDemoPanel extends Composite implements FacetSelectionListener{
     	
        // tagsView.addFacetSelectionListener(this);
        // tagsView.updateSelections(list,null);
-        executeSearch();
+    	
+		Runnable onLoadCallback = new Runnable() {
+		      public void run() {
+		    	resultsView.load();
+		      	executeSearch();
+		      }
+		 };
+		 VisualizationUtils.loadVisualizationApi(onLoadCallback, Table.PACKAGE);
 	}
-    
-    
 
     public void handleSelectedEvent(FacetValueSelectionEvent event) {
     	Map<String,BoboSelection> selMap = _req.getSelections();

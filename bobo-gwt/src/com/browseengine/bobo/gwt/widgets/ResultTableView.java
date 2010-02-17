@@ -9,7 +9,6 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.visualization.client.DataTable;
-import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.events.PageHandler;
 import com.google.gwt.visualization.client.events.SortHandler;
@@ -25,16 +24,14 @@ public class ResultTableView extends Composite{
 	public ResultTableView(String... fieldNames){
 		_fieldNames = fieldNames;
 		_panel = new VerticalPanel();
-		Runnable onLoadCallback = new Runnable() {
-		      public void run() {
-		    	  _table = new Table();
-		    	  _panel.add(_table);
-		    	  _table.addSortHandler(new ResultSortHandler());
-		  		  _table.addPageHandler(new ResultPageHandler());
-		      }
-		 };
 		initWidget(_panel);
-		VisualizationUtils.loadVisualizationApi(onLoadCallback, Table.PACKAGE);
+	}	
+	
+	public void load(){
+	  _table = new Table();
+  	  _panel.add(_table);
+  	  _table.addSortHandler(new ResultSortHandler());
+	  _table.addPageHandler(new ResultPageHandler());
 	}
 	
 	public @UiConstructor ResultTableView(String fieldNames) {
@@ -70,9 +67,7 @@ public class ResultTableView extends Composite{
 	}
 	
 	public void updateResults(List<BoboHit> hitList){
-		if (hitList==null){
-			Window.alert("null hit list");
-		}
+	    if (_table == null) return;
 		DataTable dataTable = DataTable.create();
 		for (String fieldName : _fieldNames){
 			dataTable.addColumn(ColumnType.STRING, fieldName);
@@ -81,6 +76,7 @@ public class ResultTableView extends Composite{
 		dataTable.addRows(hitList.size());
 		
 		int row = 0;
+
 		for (BoboHit hit : hitList){
 			Map<String,String[]> fields = hit.getFields();
 			float score = hit.getScore();
