@@ -1,5 +1,6 @@
 package com.browseengine.bobo.gwt.widgets;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +11,6 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
-import com.google.gwt.visualization.client.events.PageHandler;
 import com.google.gwt.visualization.client.events.SortHandler;
 import com.google.gwt.visualization.client.visualizations.Table;
 import com.google.gwt.visualization.client.visualizations.Table.Options;
@@ -21,17 +21,22 @@ public class ResultTableView extends Composite{
 	private final String[] _fieldNames;
 	private int _numRows = 10;
 	private VerticalPanel _panel;
+	private List<ResultSortHandler> _sortHandlers;
 	public ResultTableView(String... fieldNames){
 		_fieldNames = fieldNames;
 		_panel = new VerticalPanel();
 		initWidget(_panel);
+		_sortHandlers = new LinkedList<ResultSortHandler>();
 	}	
+	
+	public void addResultSortHandler(ResultSortHandler sortHandler){
+		_sortHandlers.add(sortHandler);
+	}
 	
 	public void load(){
 	  _table = new Table();
   	  _panel.add(_table);
-  	  _table.addSortHandler(new ResultSortHandler());
-	  _table.addPageHandler(new ResultPageHandler());
+  	  _table.addSortHandler(new MyResultSortHandler());
 	}
 	
 	public @UiConstructor ResultTableView(String fieldNames) {
@@ -92,29 +97,28 @@ public class ResultTableView extends Composite{
 		Options options = Options.create();
 		options.setShowRowNumber(true);
 		options.setOption("alternatingRowStyle", true);
-		options.setPage(Policy.EVENT);
+		options.setPage(Policy.DISABLE);
 		options.setSort(Policy.EVENT);
 		options.setPageSize(_numRows);
 		options.setOption("width","100%");
 		_table.draw(dataTable,options);
 	}
 	
-	private class ResultSortHandler extends SortHandler{
+	private class MyResultSortHandler extends SortHandler{
 
 		@Override
 		public void onSort(SortEvent event) {
 			boolean reverse = !event.isAscending();
 			int col = event.getColumn();
-			Window.alert("sort clicked");
+			if (col>=0 && col<_fieldNames.length){
+				for (ResultSortHandler handler : _sortHandlers){
+					handler.handleSort(_fieldNames[col], reverse);
+				}
+			}
 		}
 	}
 	
-	private class ResultPageHandler extends PageHandler{
-
-		@Override
-		public void onPage(PageEvent event) {
-			Window.alert("paging clicked");
-		}
-		
+	public static interface ResultSortHandler{
+		void handleSort(String field,boolean reverse);
 	}
 }
