@@ -40,7 +40,6 @@ public class RangeFacetCountCollector implements FacetCountCollector
               _predefinedRangeIndexes[i++]=FacetRangeFilter.parse(_dataCache,range);
           }
       }
-
   }
   
   /**
@@ -188,44 +187,44 @@ public class RangeFacetCountCollector implements FacetCountCollector
   }*/
 
   public List<BrowseFacet> getFacets() {
-      if (_ospec!=null){
-              if (_predefinedRangeIndexes!=null)
-                  {
-                  int minCount=_ospec.getMinHitCount();
-                  int[] rangeCounts = new int[_predefinedRangeIndexes.length];
-                  for (int i=0;i<_count.length;++i){
-                      if (_count[i] >0 ){
-                          for (int k=0;k<_predefinedRangeIndexes.length;++k)
-                          {
-                              if (i>=_predefinedRangeIndexes[k][0] && i<=_predefinedRangeIndexes[k][1])
-                              {
-                                  rangeCounts[k]+=_count[i];
-                              }
-                          }
-                      }
-                  }
-                  List<BrowseFacet> list=new ArrayList<BrowseFacet>(rangeCounts.length);
-                  for (int i=0;i<rangeCounts.length;++i)
-                  {
-                      if (rangeCounts[i]>=minCount)
-                      {
-                          BrowseFacet choice=new BrowseFacet();
-                          choice.setHitCount(rangeCounts[i]);
-                          choice.setValue(_predefinedRanges.get(i));
-                          list.add(choice);
-                      }
-                  }
-                  return list;
-              }
-              else
-              {
-                  return FacetCountCollector.EMPTY_FACET_LIST;
-              }
-      }
-      else
-      {
-          return FacetCountCollector.EMPTY_FACET_LIST;
-      }
+	  if (_ospec!=null){
+		  if (_predefinedRangeIndexes!=null)
+		  {
+			  int minCount=_ospec.getMinHitCount();
+			  int[] rangeCounts = new int[_predefinedRangeIndexes.length];
+			  for (int i=0;i<_count.length;++i){
+				  if (_count[i] >0 ){
+					  for (int k=0;k<_predefinedRangeIndexes.length;++k)
+					  {
+						  if (i>=_predefinedRangeIndexes[k][0] && i<=_predefinedRangeIndexes[k][1])
+						  {
+							  rangeCounts[k]+=_count[i];
+						  }
+					  }
+				  }
+			  }
+			  List<BrowseFacet> list=new ArrayList<BrowseFacet>(rangeCounts.length);
+			  for (int i=0;i<rangeCounts.length;++i)
+			  {
+				  if (rangeCounts[i]>=minCount)
+				  {
+					  BrowseFacet choice=new BrowseFacet();
+					  choice.setHitCount(rangeCounts[i]);
+					  choice.setValue(_predefinedRanges.get(i));
+					  list.add(choice);
+				  }
+			  }
+			  return list;
+		  }
+		  else
+		  {
+			  return FacetCountCollector.EMPTY_FACET_LIST;
+		  }
+	  }
+	  else
+	  {
+		  return FacetCountCollector.EMPTY_FACET_LIST;
+	  }
   }
   
   private static class RangeFacet extends BrowseFacet{
