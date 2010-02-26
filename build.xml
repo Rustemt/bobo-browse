@@ -10,6 +10,8 @@
 	<property name="bobo-browse" value="bobo-browse"/>
 	<property name="bobo-service" value="bobo-service"/>
 	<property name="bobo-solr" value="bobo-solr"/>
+	<property name="bobo-gwt" value="bobo-gwt"/>
+	<property name="bobo-demo" value="bobo-demo"/>
 	<property name="bobo-perf" value="bobo-perf"/>
 
 	<property name="geo-local" value="geo-local"/>
@@ -56,6 +58,10 @@
 		<ant antfile="build.xml"
 			 dir="${bobo-browse}" target="clean"/>
 		<ant antfile="build.xml"
+					 dir="${bobo-gwt}" target="clean"/>
+			<ant antfile="build.xml"
+						 dir="${bobo-demo}" target="clean"/>
+		<ant antfile="build.xml"
 			 dir="${bobo-service}" target="clean"/>
 		<ant antfile="build.xml"
 					 dir="${bobo-solr}" target="clean"/>
@@ -99,6 +105,8 @@
 			 dir="${bobo-service}" target="dist"/>
 		<ant antfile="build.xml"
 		     dir="${bobo-solr}" target="dist" />
+		<ant antfile="build.xml"
+				     dir="${bobo-gwt}" target="dist" />
 	</target>
 	
 	<target name="javadoc">
@@ -178,7 +186,39 @@
 		<delete dir="cardemo/cars" />
 	</target>
 	
+	<target name="bobo-demo" depends="jars">
+		<ant antfile="build.xml"
+					 dir="${bobo-demo}" target="dist"/>
+	</target>
+	
+	<target name="bobo-demo-dev" depends="jars">
+		<ant antfile="build.xml"
+							 dir="${bobo-demo}" target="hosted"/>
+	</target>
+	
 	<target name="run-cardemo"  depends="dist,make-car-war" > 
+		<mkdir dir="${logs}" />
+		<java fork="true" jar="${bobo.root}/zoie-server.jar" failonerror="true" maxmemory="1000m">
+								<sysproperty key="log.home" value="${logs}" />
+								<sysproperty key="conf.dir" value="${resource}" />
+								<jvmarg value="-server" />
+								<jvmarg value="-Dcom.sun.management.jmxremote" />
+								<jvmarg value="-Dcom.sun.management.jmxremote.port=9999" />
+								<jvmarg value="-Dcom.sun.management.jmxremote.authenticate=false" />
+								<jvmarg value="-Dcom.sun.management.jmxremote.ssl=false" />
+								<!-- for debugging 
+								<jvmarg value="-Xdebug -Xnoagent"/>
+								<jvmarg value="-Djava.compiler=NONE"/> 
+								<jvmarg value="-Xrunjdwp:transport=dt_socket,address=8886,server=y,suspend=y"/>
+								-->
+								
+								<!-- uncomment to turn on yourkit profiling
+								<jvmarg value="-agentlib:yjpagent" />
+								-->
+		</java>
+	</target>
+	
+	<target name="run-server"> <!--  depends="bobo-demo" > --> 
 		<mkdir dir="${logs}" />
 		<java fork="true" jar="${bobo.root}/zoie-server.jar" failonerror="true" maxmemory="1000m">
 								<sysproperty key="log.home" value="${logs}" />
