@@ -78,6 +78,7 @@ import com.browseengine.bobo.api.FieldValueAccessor;
 import com.browseengine.bobo.api.MultiBoboBrowser;
 import com.browseengine.bobo.api.BrowseSelection.ValueOperation;
 import com.browseengine.bobo.api.FacetSpec.FacetSortSpec;
+import com.browseengine.bobo.client.GeoExample;
 import com.browseengine.bobo.facets.FacetHandler;
 import com.browseengine.bobo.facets.FacetHandler.TermCountSize;
 import com.browseengine.bobo.facets.data.PredefinedTermListFactory;
@@ -215,6 +216,8 @@ public class BoboTestCase extends TestCase {
 		d1.add(buildMetaField("path","a-b"));
 		d1.add(buildMetaField("multipath","a-b"));
 		d1.add(buildMetaField("custom","000003"));
+		d1.add(buildMetaField("latitude", "60"));
+		d1.add(buildMetaField("longitude", "120"));
 		
 		Document d2=new Document();
 		d2.add(buildMetaField("id","2"));
@@ -239,6 +242,8 @@ public class BoboTestCase extends TestCase {
 		d2.add(buildMetaField("multipath","a-c-d"));
 		d2.add(buildMetaField("multipath","a-b"));
 		d2.add(buildMetaField("custom","000010"));
+		d2.add(buildMetaField("latitude", "50"));
+		d2.add(buildMetaField("longitude", "110"));
 		
 		Document d3=new Document();
 		d3.add(buildMetaField("id","3"));
@@ -263,6 +268,8 @@ public class BoboTestCase extends TestCase {
 		d3.add(buildMetaField("multipath","a-e"));
 		d3.add(buildMetaField("multipath","a-b"));
 		d3.add(buildMetaField("custom","000015"));
+		d3.add(buildMetaField("latitude", "35"));
+		d3.add(buildMetaField("longitude", "70"));
 		
 		Document d4=new Document();
 		d4.add(buildMetaField("id","4"));
@@ -286,6 +293,8 @@ public class BoboTestCase extends TestCase {
 		d4.add(buildMetaField("multipath","a-c"));
 		d4.add(buildMetaField("multipath","a-b"));
 		d4.add(buildMetaField("custom","000019"));
+		d4.add(buildMetaField("latitude", "30"));
+		d4.add(buildMetaField("longitude", "75"));
 		
 		Document d5=new Document();
 		d5.add(buildMetaField("id","5"));
@@ -310,6 +319,8 @@ public class BoboTestCase extends TestCase {
 		d5.add(buildMetaField("multipath","a-e-f"));
 		d5.add(buildMetaField("multipath","a-b"));
 		d5.add(buildMetaField("custom","000002"));
+		d5.add(buildMetaField("latitude", "60"));
+		d5.add(buildMetaField("longitude", "120"));
 		
 		Document d6=new Document();
 		d6.add(buildMetaField("id","6"));
@@ -336,6 +347,8 @@ public class BoboTestCase extends TestCase {
 		d6.add(buildMetaField("multipath","a-c-d"));
 		d6.add(buildMetaField("multipath","a-b"));
 		d6.add(buildMetaField("custom","000009"));
+		d6.add(buildMetaField("latitude", "80"));
+		d6.add(buildMetaField("longitude", "-90"));
 		
 		Document d7=new Document();
 		d7.add(buildMetaField("id","7"));
@@ -360,7 +373,12 @@ public class BoboTestCase extends TestCase {
 		d7.add(buildMetaField("multipath","a-c"));
 		d7.add(buildMetaField("multipath","a-b"));
 		d7.add(buildMetaField("custom","000013"));
+		d7.add(buildMetaField("latitude", "70"));
+		d7.add(buildMetaField("longitude", "-60"));
 		
+		Document d8 = new Document();
+		d8.add(buildMetaField("latitude", "35"));
+		d8.add(buildMetaField("longitude", "120"));
 		
 		dataList.add(d1);
 		dataList.add(d2);
@@ -432,6 +450,10 @@ public class BoboTestCase extends TestCase {
 		facetHandlers.add(new MultiValueFacetHandler("multinum", new PredefinedTermListFactory(Integer.class, "000")));
 		facetHandlers.add(new CompactMultiValueFacetHandler("compactnum", new PredefinedTermListFactory(Integer.class, "000")));
 		facetHandlers.add(new SimpleFacetHandler("storenum", new PredefinedTermListFactory(Long.class, null)));
+		/* New FacetHandler for geographic locations. Depends on two RangeFacetHandlers on latitude and longitude */
+		facetHandlers.add(new RangeFacetHandler("latitude", Arrays.asList(new String[]{"[* TO 30]", "[35 TO 60]", "[70 TO 120]"})));
+		facetHandlers.add(new RangeFacetHandler("longitude", Arrays.asList(new String[]{"[* TO 30]", "[35 TO 60]", "[70 TO 120]"})));
+		facetHandlers.add(new GeoExample("distance", "latitude", "longitude"));
 		
 		LinkedHashSet<String> dependsNames=new LinkedHashSet<String>();
 		dependsNames.add("color");
@@ -618,6 +640,71 @@ public class BoboTestCase extends TestCase {
 		answer=new HashMap<String,List<BrowseFacet>>();
 		answer.put("path", Arrays.asList(new BrowseFacet[]{new BrowseFacet("a-c",4),new BrowseFacet("a-e",2)}));
 		doTest(br,7,answer,null);
+	}
+
+	public void testGeo() throws Exception{
+		// testing facet counts for two distance facets - <30,70,5>, <60,120,1>
+		BrowseRequest br=new BrowseRequest();
+		br.setCount(10);
+		br.setOffset(0);
+
+        BrowseSelection sel=new BrowseSelection("distance");
+        sel.addValue("<30,70,5>");
+        sel.addValue("<60,120,1>");
+        br.addSelection(sel); 
+		
+		FacetSpec geoSpec=new FacetSpec();
+		geoSpec.setOrderBy(FacetSortSpec.OrderValueAsc);
+		br.setFacetSpec("distance", geoSpec);
+		
+		HashMap<String,List<BrowseFacet>> answer=new HashMap<String,List<BrowseFacet>>();
+		answer.put("distance", Arrays.asList(new BrowseFacet[]{new BrowseFacet("<30,70,5>",2),new BrowseFacet("<60,120,1>",2)}));
+		doTest(br,4,answer,null);
+
+		// testing for selection of facet <60,120,1> and verifying that 2 documents match this facet.
+		BrowseRequest br2 = new BrowseRequest();
+		br2.setCount(10);
+		br2.setOffset(0);	
+
+		BrowseSelection sel2 = new BrowseSelection("distance");
+		sel2.addValue("<60,120,1>");
+		HashMap map = new HashMap<String, Float>();
+		map.put("<60,120,1>", 3.0f);
+		FacetTermQuery geoQ = new FacetTermQuery(sel2,map);
+		
+		System.out.println("Testing GeoFacet Filters");
+		BoboBrowser b = newBrowser();
+		Explanation expl = b.explain(geoQ, 0);
+		System.out.println(expl);
+		
+		br2.setQuery(geoQ);
+		doTest(br2,2,null,new String[]{"1","5"});
+		expl = b.explain(geoQ, 1);
+	    System.out.println(expl);
+	    
+	    // facet query for color "red" and getting facet counts for the distance facet.
+		BrowseRequest br3 = new BrowseRequest();
+		br3.setCount(10);
+		br3.setOffset(0);	
+
+		BrowseSelection sel3 = new BrowseSelection("color");
+		sel3.addValue("red");
+		HashMap map3 = new HashMap<String, Float>();
+		map3.put("red", 3.0f);
+		FacetTermQuery colorQ = new FacetTermQuery(sel3,map3);
+
+		BoboBrowser b2 = newBrowser();
+		Explanation expl2 = b.explain(colorQ, 0);
+		System.out.println(expl2);
+
+		br3.setFacetSpec("distance", geoSpec);
+		geoSpec.setMinHitCount(0);
+		br3.setQuery(colorQ);             // query is color=red
+		br3.addSelection(sel);			  // count facets <30,70,5> and <60,120,1>
+		answer.clear();
+		answer.put("distance", Arrays.asList(new BrowseFacet[]{new BrowseFacet("<30,70,5>", 0), new BrowseFacet("<60,120,1>",1)}));		
+		doTest(br3, 1 , answer, null);
+
 	}
 	
 	public void testMultiPath() throws Exception{
